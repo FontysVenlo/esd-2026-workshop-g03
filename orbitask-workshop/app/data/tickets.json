@@ -1,0 +1,439 @@
+{
+ "tickets": [
+  {
+   "number": 1,
+   "id": "ORB-1042",
+   "title": "Leads get lost between the website and the sales team",
+   "priority": "High",
+   "from_name": "Sarah Peeters",
+   "from_role": "Head of Sales",
+   "color": "#C2410C",
+   "initials": "SP",
+   "process": "P1 – Lead to contract",
+   "page_id": "p1",
+   "scope": "From 'Demo request via website form' to 'Call prospect and give demo'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hi! You're the new process consultant, right? I really need your help with something."
+    },
+    {
+     "type": "text",
+     "text": "We are losing customers before we even talk to them. My assistant spends hours copying website forms into Excel, two reps sometimes call the same company and other leads are never called at all. Marketing launches a big campaign next quarter and expects 3x more demo requests. I will NOT hire a second person to type data. I want leads to arrive at the right rep automatically."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "40 demo requests per week, ~15 min of manual work per lead",
+      "About 10% of leads are never contacted",
+      "Average time between form and first call: 3 working days",
+      "Duplicates and typos in the Excel lead list"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Every lead stored in one central system within 5 minutes, without retyping",
+      "Automatic duplicate check and automatic assignment to a sales rep",
+      "First call within 24 hours"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: From 'Demo request via website form' to 'Call prospect and give demo'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 2,
+   "id": "ORB-1057",
+   "title": "New customers wait a week before they can log in",
+   "priority": "Critical",
+   "from_name": "Lucas Martin",
+   "from_role": "Head of Customer Success",
+   "color": "#7C3AED",
+   "initials": "LM",
+   "process": "P2 – Customer onboarding",
+   "page_id": "p2",
+   "scope": "From the 'New customer' email from Sales to 'Email CS: accounts are ready'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hello, do you have a minute? We have a serious problem with new customers."
+    },
+    {
+     "type": "text",
+     "text": "Customers pay from day one, but they wait about six working days before anybody can log in. Our biggest new client had 300 users and it took our support engineer almost three days to create the accounts by hand. On top of that, the security audit flagged that we email passwords in plain text. This has to stop before the next audit."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "6 working days from contract to first login",
+      "~45 min per 10 users created by hand",
+      "1 user list in 3 contains errors and comes back for correction",
+      "Security audit finding: passwords sent by email"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Workspace and user accounts ready within 1 working day after signature",
+      "No passwords sent by email (users set their own)",
+      "Support engineers only involved for special cases"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: From the 'New customer' email from Sales to 'Email CS: accounts are ready'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 3,
+   "id": "ORB-1063",
+   "title": "New employees can't work during their first days",
+   "priority": "High",
+   "from_name": "Ines Dubois & Tom Becker",
+   "from_role": "HR Director & IT Manager",
+   "color": "#0F766E",
+   "initials": "ID",
+   "process": "P3 – Employee onboarding",
+   "page_id": "p3",
+   "scope": "From 'New hire signs paper contract' to 'Employee can start working'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hi there! Tom from IT is in this chat too. We need you for something that annoys everybody."
+    },
+    {
+     "type": "text",
+     "text": "We hire 8 people a month and almost every new colleague sits idle for two or three days: no laptop, missing accounts, passwords on a sticky note. HR and IT keep emailing each other about missing information in the Word form. It is a terrible first impression and it costs us real money. We want everything ready on day one."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "Half of the onboarding forms are incomplete",
+      "Account creation: ~2 h per hire in 6 different tools",
+      "New hires idle for 2–3 days on average",
+      "Passwords handed over on paper"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Laptop, accounts and access ready on the first day, every time",
+      "Information entered once, in one place",
+      "No passwords on paper"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: From 'New hire signs paper contract' to 'Employee can start working'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 4,
+   "id": "ORB-1071",
+   "title": "Releases are slow, risky and only on Friday night",
+   "priority": "High",
+   "from_name": "Daniel Novak",
+   "from_role": "CTO",
+   "color": "#B91C1C",
+   "initials": "DN",
+   "process": "P5 – Development and release",
+   "page_id": "p5",
+   "scope": "From 'End of 2-week sprint' to 'Release live'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hey. Quick question – are you the one working on our processes? I have a job for you."
+    },
+    {
+     "type": "text",
+     "text": "Every release is a small drama. Builds are made on someone's laptop, QA clicks through a 300-step Excel checklist for two days, and Ops copies files to the servers by FTP on Friday night. One release in five has to be rolled back by hand. Our competitors release several times a week. I want releases to be boring."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "2 days of manual regression testing per release",
+      "Releases only on Friday 22:00 with ~3 h downtime",
+      "1 release in 5 rolled back manually",
+      "'Works on my machine': builds differ between laptops"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Release on any weekday, during office hours, without downtime",
+      "Automated tests in less than 1 hour",
+      "Rollback in minutes, release notes generated automatically"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: From 'End of 2-week sprint' to 'Release live'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 5,
+   "id": "ORB-1078",
+   "title": "Customers wait 2 days for an answer – some never get one",
+   "priority": "Critical",
+   "from_name": "Emma Willems",
+   "from_role": "CEO",
+   "color": "#1D4ED8",
+   "initials": "EW",
+   "process": "P6 – Customer support",
+   "page_id": "p6",
+   "scope": "Whole process: from 'Customer emails support@orbitask' to 'Case closed'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hi. I'll be direct: our customer support is hurting our reputation and I need a better process."
+    },
+    {
+     "type": "text",
+     "text": "Yesterday a customer posted on LinkedIn that we 'never answer support emails'. I checked: he was right. Our support team works hard, but everything goes through one shared mailbox and the team lead sorts emails by hand all morning. Nobody knows which cases are open, and customers call us all day to ask for a status update. Fix this."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "Average first reply: 2 working days",
+      "~12% of emails never get an answer",
+      "Team lead spends ~1.5 h per day sorting emails",
+      "~30 phone calls per day just to ask for status",
+      "Same questions answered again and again"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Every request becomes a ticket with an owner and a status",
+      "First reply within 4 working hours",
+      "Customers can see the status themselves and find answers to common questions"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: Whole process: from 'Customer emails support@orbitask' to 'Case closed'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 6,
+   "id": "ORB-1084",
+   "title": "Invoicing takes a week and is full of errors",
+   "priority": "High",
+   "from_name": "Marc Janssens",
+   "from_role": "CFO",
+   "color": "#A16207",
+   "initials": "MJ",
+   "process": "P7 – Billing and payment",
+   "page_id": "p7",
+   "scope": "From '1st working day of the month' to 'Invoice paid'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Good morning! Finance needs your help, urgently."
+    },
+    {
+     "type": "text",
+     "text": "Two of my people spend four days every month typing 900 invoices in Word from a CSV that a developer exports for us. Then one of them spends a full day ticking off payments on the bank statement. Customers complain about wrong amounts and reminders that arrive when they have already paid. I want billing to run by itself and my team to do analysis, not typing."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "2 people x 4 days per month to produce invoices",
+      "~900 invoices typed one by one",
+      "Payment matching: 1 full day per month, ~3% mistakes",
+      "Developers interrupted every month for the usage export"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "All invoices created and sent automatically on day 1",
+      "Payments matched automatically, reminders sent automatically",
+      "Finance effort below 1 person-day per month"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: From '1st working day of the month' to 'Invoice paid'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  },
+  {
+   "number": 7,
+   "id": "ORB-1090",
+   "title": "Our management report is two weeks late and nobody trusts the numbers",
+   "priority": "Medium",
+   "from_name": "Emma Willems",
+   "from_role": "CEO",
+   "color": "#BE185D",
+   "initials": "EW",
+   "process": "P10 – Monthly management reporting",
+   "page_id": "p10",
+   "scope": "Whole process: from '5th working day of the month' to 'Report presented'",
+   "script": [
+    {
+     "type": "text",
+     "text": "Hi! One more thing on my list, and it's an important one for the board."
+    },
+    {
+     "type": "text",
+     "text": "Every month we discuss figures that are already two weeks old. Our controller spends three days copy-pasting six Excel files into one master file, and every department calculates its KPIs differently – we even disagree on what an 'active customer' is. I want to see our key numbers at any moment, and I want one version of the truth."
+    },
+    {
+     "type": "list",
+     "intro": "Here's what my team measured:",
+     "items": [
+      "Report ready around day 13 of the month",
+      "3 days of copy-paste for the controller",
+      "6 departments, 6 different Excel formats",
+      "KPI definitions differ between teams"
+     ]
+    },
+    {
+     "type": "list",
+     "intro": "What I want at the end:",
+     "items": [
+      "Live KPI dashboard, updated at least daily",
+      "One shared definition per KPI",
+      "Controller spends time on analysis, not on copy-paste"
+     ]
+    },
+    {
+     "type": "process",
+     "text": "The current process is documented here. Please focus on this part: Whole process: from '5th working day of the month' to 'Report presented'."
+    },
+    {
+     "type": "list",
+     "intro": "Can you send me a proposal? I need:",
+     "items": [
+      "the to-be process in BPMN, on a new page in the same file",
+      "which IT tools or automations you would use, and what they do",
+      "the expected gain compared with today's figures"
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Reply here in the chat when you have something. Thanks a lot!"
+    }
+   ],
+   "ack": "Thanks, got it! I'll go through it with my team. If you improve it further, just send me an update here."
+  }
+ ],
+ "guide": {
+  "constraints": [
+   "Orbitask already uses Microsoft 365 (Outlook, Teams, SharePoint, Excel, Forms, Power Automate, Power BI).",
+   "New tools may be proposed (CRM, ticketing, billing…) if you can justify them.",
+   "Keep a human in the loop where real judgement is needed. Automate the rest."
+  ],
+  "tips": [
+   "Open the editor with the button in the chat or the 'Processes' icon on the left.",
+   "Right-click the page tab of your process (bottom of the editor) → Duplicate, then rename the copy to 'To-be'.",
+   "Mark the problem tasks in red on the as-is page (select → Format panel → Fill).",
+   "BPMN shapes are in the 'BPMN 2.0' libraries in the left panel. To turn a task into a service task: select it → Format panel on the right → 'Property' list → Task Marker → Service.",
+   "Your work is saved automatically inside the container. Use 'Hand in' to download your file at the end."
+  ]
+ }
+}
