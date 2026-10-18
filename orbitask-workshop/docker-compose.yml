@@ -1,0 +1,17 @@
+name: orbitask
+
+services:
+  orbitask:
+    build: .
+    image: orbitask-workshop
+    container_name: orbitask
+    ports:
+      - "8080:8080"
+    volumes:
+      - orbitask-data:/data
+    # environment:
+    #   PROBLEM: "3"   # optional: force problem 1-7 instead of a random one
+    restart: unless-stopped
+
+volumes:
+  orbitask-data:
