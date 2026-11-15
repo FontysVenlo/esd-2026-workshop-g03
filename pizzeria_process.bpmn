@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Pizzeria" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Claude" exporterVersion="1.0">
+  <bpmn:message id="Msg_DineInArrival" name="Customer arrives to eat in" />
+  <bpmn:message id="Msg_TakeoutOrder" name="Takeout order" />
+  <bpmn:message id="Msg_BillRequest" name="Bill request" />
+  <bpmn:message id="Msg_PickupArrival" name="Customer arrives for pickup" />
+  <bpmn:collaboration id="Collab_Pizzeria">
+    <bpmn:participant id="Part_CustDine" name="Dine-in customer" />
+    <bpmn:participant id="Part_CustTake" name="Takeout customer" />
+    <bpmn:participant id="Part_Pizzeria" name="Pizzeria" processRef="Process_Pizzeria" />
+    <bpmn:messageFlow id="M1" name="Arrives at restaurant" sourceRef="Part_CustDine" targetRef="Start_DineIn" />
+    <bpmn:messageFlow id="M2" name="Places takeout order" sourceRef="Part_CustTake" targetRef="Start_Takeout" />
+    <bpmn:messageFlow id="M3" name="Gives order" sourceRef="Part_CustDine" targetRef="Task_TakeOrder" />
+    <bpmn:messageFlow id="M4" name="Pizza" sourceRef="Task_Serve" targetRef="Part_CustDine" />
+    <bpmn:messageFlow id="M5" name="Asks for bill" sourceRef="Part_CustDine" targetRef="Catch_Bill" />
+    <bpmn:messageFlow id="M6" name="Payment" sourceRef="Part_CustDine" targetRef="Task_PayDineIn" />
+    <bpmn:messageFlow id="M7" name="Arrives for pickup" sourceRef="Part_CustTake" targetRef="Catch_Pickup" />
+    <bpmn:messageFlow id="M8" name="Payment" sourceRef="Part_CustTake" targetRef="Task_PayTakeout" />
+    <bpmn:messageFlow id="M9" name="Boxed pizza" sourceRef="Task_HandOver" targetRef="Part_CustTake" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Pizzeria" name="Pizzeria order process" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Pizzeria">
+      <bpmn:lane id="Lane_Waiter" name="Waiter (front of house)">
+        <bpmn:flowNodeRef>Start_DineIn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Greet</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TakeOrder</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_POS_DineIn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Serve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Catch_Bill</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Bill</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PayDineIn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Clear</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_DineIn</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Kitchen" name="Kitchen (pizzaiolo)">
+        <bpmn:flowNodeRef>GW_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Dough</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Toppings</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Bake</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_QC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_QC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Type</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Counter" name="Counter / Cashier (takeout)">
+        <bpmn:flowNodeRef>Start_Takeout</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RecordTakeout</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PickupTime</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_POS_Takeout</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Box</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Catch_Pickup</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PayTakeout</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HandOver</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Takeout</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_DineIn" name="Customer arrives to eat in">
+      <bpmn:outgoing>F1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_Start_DineIn" messageRef="Msg_DineInArrival" />
+    </bpmn:startEvent>
+    <bpmn:manualTask id="Task_Greet" name="Greet and seat customer">
+      <bpmn:incoming>F1</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:userTask id="Task_TakeOrder" name="Present menu and take order">
+      <bpmn:incoming>F2</bpmn:incoming>
+      <bpmn:outgoing>F3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_POS_DineIn" name="Enter order in POS (table no.)">
+      <bpmn:incoming>F3</bpmn:incoming>
+      <bpmn:outgoing>F4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="Start_Takeout" name="Takeout order received (phone / counter)">
+      <bpmn:outgoing>F5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_Start_Takeout" messageRef="Msg_TakeoutOrder" />
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_RecordTakeout" name="Record order and customer name / phone">
+      <bpmn:incoming>F5</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:manualTask id="Task_PickupTime" name="Give estimated pickup time">
+      <bpmn:incoming>F6</bpmn:incoming>
+      <bpmn:outgoing>F7</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:userTask id="Task_POS_Takeout" name="Enter order in POS (takeout)">
+      <bpmn:incoming>F7</bpmn:incoming>
+      <bpmn:outgoing>F8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_Merge">
+      <bpmn:incoming>F4</bpmn:incoming>
+      <bpmn:incoming>F8</bpmn:incoming>
+      <bpmn:outgoing>F9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:manualTask id="Task_Dough" name="Prepare and stretch dough">
+      <bpmn:incoming>F9</bpmn:incoming>
+      <bpmn:incoming>F14_No</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="Task_Toppings" name="Add sauce and toppings">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="Task_Bake" name="Bake pizza in oven">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="Task_QC" name="Quality check">
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:exclusiveGateway id="GW_QC" name="Quality OK?">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14_No</bpmn:outgoing>
+      <bpmn:outgoing>F15_Yes</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="GW_Type" name="Order type?">
+      <bpmn:incoming>F15_Yes</bpmn:incoming>
+      <bpmn:outgoing>F16_DineIn</bpmn:outgoing>
+      <bpmn:outgoing>F17_Takeout</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:manualTask id="Task_Serve" name="Serve pizza at table">
+      <bpmn:incoming>F16_DineIn</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:intermediateCatchEvent id="Catch_Bill" name="Customer asks for the bill">
+      <bpmn:incoming>F18</bpmn:incoming>
+      <bpmn:outgoing>F19</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_Catch_Bill" messageRef="Msg_BillRequest" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Bill" name="Present bill">
+      <bpmn:incoming>F19</bpmn:incoming>
+      <bpmn:outgoing>F20</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PayDineIn" name="Process payment">
+      <bpmn:incoming>F20</bpmn:incoming>
+      <bpmn:outgoing>F21</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:manualTask id="Task_Clear" name="Clear and reset table">
+      <bpmn:incoming>F21</bpmn:incoming>
+      <bpmn:outgoing>F22</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:endEvent id="End_DineIn" name="Dine-in order completed">
+      <bpmn:incoming>F22</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:manualTask id="Task_Box" name="Box and label pizza">
+      <bpmn:incoming>F17_Takeout</bpmn:incoming>
+      <bpmn:outgoing>F23</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:intermediateCatchEvent id="Catch_Pickup" name="Customer arrives for pickup">
+      <bpmn:incoming>F23</bpmn:incoming>
+      <bpmn:outgoing>F24</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_Catch_Pickup" messageRef="Msg_PickupArrival" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_PayTakeout" name="Collect payment">
+      <bpmn:incoming>F24</bpmn:incoming>
+      <bpmn:outgoing>F25</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:manualTask id="Task_HandOver" name="Hand over pizza">
+      <bpmn:incoming>F25</bpmn:incoming>
+      <bpmn:outgoing>F26</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:endEvent id="End_Takeout" name="Takeout order completed">
+      <bpmn:incoming>F26</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F1" sourceRef="Start_DineIn" targetRef="Task_Greet" />
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Greet" targetRef="Task_TakeOrder" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Task_TakeOrder" targetRef="Task_POS_DineIn" />
+    <bpmn:sequenceFlow id="F4" sourceRef="Task_POS_DineIn" targetRef="GW_Merge" />
+    <bpmn:sequenceFlow id="F5" sourceRef="Start_Takeout" targetRef="Task_RecordTakeout" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Task_RecordTakeout" targetRef="Task_PickupTime" />
+    <bpmn:sequenceFlow id="F7" sourceRef="Task_PickupTime" targetRef="Task_POS_Takeout" />
+    <bpmn:sequenceFlow id="F8" sourceRef="Task_POS_Takeout" targetRef="GW_Merge" />
+    <bpmn:sequenceFlow id="F9" sourceRef="GW_Merge" targetRef="Task_Dough" />
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_Dough" targetRef="Task_Toppings" />
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_Toppings" targetRef="Task_Bake" />
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_Bake" targetRef="Task_QC" />
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_QC" targetRef="GW_QC" />
+    <bpmn:sequenceFlow id="F14_No" name="No – redo" sourceRef="GW_QC" targetRef="Task_Dough">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${qualityOk == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F15_Yes" name="Yes" sourceRef="GW_QC" targetRef="GW_Type">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${qualityOk == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F16_DineIn" name="Dine-in" sourceRef="GW_Type" targetRef="Task_Serve">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${orderType == &quot;dineIn&quot;}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F17_Takeout" name="Takeout" sourceRef="GW_Type" targetRef="Task_Box">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${orderType == &quot;takeout&quot;}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F18" sourceRef="Task_Serve" targetRef="Catch_Bill" />
+    <bpmn:sequenceFlow id="F19" sourceRef="Catch_Bill" targetRef="Task_Bill" />
+    <bpmn:sequenceFlow id="F20" sourceRef="Task_Bill" targetRef="Task_PayDineIn" />
+    <bpmn:sequenceFlow id="F21" sourceRef="Task_PayDineIn" targetRef="Task_Clear" />
+    <bpmn:sequenceFlow id="F22" sourceRef="Task_Clear" targetRef="End_DineIn" />
+    <bpmn:sequenceFlow id="F23" sourceRef="Task_Box" targetRef="Catch_Pickup" />
+    <bpmn:sequenceFlow id="F24" sourceRef="Catch_Pickup" targetRef="Task_PayTakeout" />
+    <bpmn:sequenceFlow id="F25" sourceRef="Task_PayTakeout" targetRef="Task_HandOver" />
+    <bpmn:sequenceFlow id="F26" sourceRef="Task_HandOver" targetRef="End_Takeout" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_Pizzeria">
+    <bpmndi:BPMNPlane id="Plane_Pizzeria" bpmnElement="Collab_Pizzeria">
+      <bpmndi:BPMNShape id="Part_CustDine_di" bpmnElement="Part_CustDine" isHorizontal="true"><dc:Bounds x="100" y="20" width="2260" height="70" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Part_CustTake_di" bpmnElement="Part_CustTake" isHorizontal="true"><dc:Bounds x="100" y="700" width="2260" height="70" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Part_Pizzeria_di" bpmnElement="Part_Pizzeria" isHorizontal="true"><dc:Bounds x="100" y="140" width="2260" height="510" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Waiter_di" bpmnElement="Lane_Waiter" isHorizontal="true"><dc:Bounds x="130" y="140" width="2230" height="170" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Kitchen_di" bpmnElement="Lane_Kitchen" isHorizontal="true"><dc:Bounds x="130" y="310" width="2230" height="170" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Counter_di" bpmnElement="Lane_Counter" isHorizontal="true"><dc:Bounds x="130" y="480" width="2230" height="170" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_DineIn_di" bpmnElement="Start_DineIn"><dc:Bounds x="190" y="207" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="163" y="248" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Greet_di" bpmnElement="Task_Greet"><dc:Bounds x="270" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TakeOrder_di" bpmnElement="Task_TakeOrder"><dc:Bounds x="410" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_POS_DineIn_di" bpmnElement="Task_POS_DineIn"><dc:Bounds x="550" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Takeout_di" bpmnElement="Start_Takeout"><dc:Bounds x="190" y="547" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="163" y="515" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RecordTakeout_di" bpmnElement="Task_RecordTakeout"><dc:Bounds x="270" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PickupTime_di" bpmnElement="Task_PickupTime"><dc:Bounds x="410" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_POS_Takeout_di" bpmnElement="Task_POS_Takeout"><dc:Bounds x="550" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Merge_di" bpmnElement="GW_Merge" isMarkerVisible="true"><dc:Bounds x="700" y="370" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Dough_di" bpmnElement="Task_Dough"><dc:Bounds x="790" y="355" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Toppings_di" bpmnElement="Task_Toppings"><dc:Bounds x="930" y="355" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bake_di" bpmnElement="Task_Bake"><dc:Bounds x="1070" y="355" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_QC_di" bpmnElement="Task_QC"><dc:Bounds x="1210" y="355" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_QC_di" bpmnElement="GW_QC" isMarkerVisible="true"><dc:Bounds x="1350" y="370" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1330" y="338" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Type_di" bpmnElement="GW_Type" isMarkerVisible="true"><dc:Bounds x="1440" y="370" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1420" y="338" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Serve_di" bpmnElement="Task_Serve"><dc:Bounds x="1560" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Bill_di" bpmnElement="Catch_Bill"><dc:Bounds x="1710" y="207" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1683" y="248" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bill_di" bpmnElement="Task_Bill"><dc:Bounds x="1790" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PayDineIn_di" bpmnElement="Task_PayDineIn"><dc:Bounds x="1930" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Clear_di" bpmnElement="Task_Clear"><dc:Bounds x="2070" y="185" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_DineIn_di" bpmnElement="End_DineIn"><dc:Bounds x="2210" y="207" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2183" y="248" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Box_di" bpmnElement="Task_Box"><dc:Bounds x="1560" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Pickup_di" bpmnElement="Catch_Pickup"><dc:Bounds x="1710" y="547" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1683" y="515" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PayTakeout_di" bpmnElement="Task_PayTakeout"><dc:Bounds x="1790" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandOver_di" bpmnElement="Task_HandOver"><dc:Bounds x="1930" y="525" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Takeout_di" bpmnElement="End_Takeout"><dc:Bounds x="2070" y="547" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2043" y="515" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1"><di:waypoint x="226" y="225" /><di:waypoint x="270" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2"><di:waypoint x="370" y="225" /><di:waypoint x="410" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3"><di:waypoint x="510" y="225" /><di:waypoint x="550" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4"><di:waypoint x="650" y="225" /><di:waypoint x="725" y="225" /><di:waypoint x="725" y="370" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5"><di:waypoint x="226" y="565" /><di:waypoint x="270" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F6_di" bpmnElement="F6"><di:waypoint x="370" y="565" /><di:waypoint x="410" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F7_di" bpmnElement="F7"><di:waypoint x="510" y="565" /><di:waypoint x="550" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F8_di" bpmnElement="F8"><di:waypoint x="650" y="565" /><di:waypoint x="725" y="565" /><di:waypoint x="725" y="420" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F9_di" bpmnElement="F9"><di:waypoint x="750" y="395" /><di:waypoint x="790" y="395" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10"><di:waypoint x="890" y="395" /><di:waypoint x="930" y="395" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11"><di:waypoint x="1030" y="395" /><di:waypoint x="1070" y="395" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12"><di:waypoint x="1170" y="395" /><di:waypoint x="1210" y="395" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13"><di:waypoint x="1310" y="395" /><di:waypoint x="1350" y="395" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_No_di" bpmnElement="F14_No"><di:waypoint x="1375" y="420" /><di:waypoint x="1375" y="468" /><di:waypoint x="840" y="468" /><di:waypoint x="840" y="435" /><bpmndi:BPMNLabel><dc:Bounds x="1305" y="450" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_Yes_di" bpmnElement="F15_Yes"><di:waypoint x="1400" y="395" /><di:waypoint x="1440" y="395" /><bpmndi:BPMNLabel><dc:Bounds x="1405" y="400" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_DineIn_di" bpmnElement="F16_DineIn"><di:waypoint x="1465" y="370" /><di:waypoint x="1465" y="225" /><di:waypoint x="1560" y="225" /><bpmndi:BPMNLabel><dc:Bounds x="1470" y="330" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_Takeout_di" bpmnElement="F17_Takeout"><di:waypoint x="1465" y="420" /><di:waypoint x="1465" y="565" /><di:waypoint x="1560" y="565" /><bpmndi:BPMNLabel><dc:Bounds x="1470" y="425" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18"><di:waypoint x="1660" y="225" /><di:waypoint x="1710" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19"><di:waypoint x="1746" y="225" /><di:waypoint x="1790" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F20_di" bpmnElement="F20"><di:waypoint x="1890" y="225" /><di:waypoint x="1930" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F21_di" bpmnElement="F21"><di:waypoint x="2030" y="225" /><di:waypoint x="2070" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F22_di" bpmnElement="F22"><di:waypoint x="2170" y="225" /><di:waypoint x="2210" y="225" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F23_di" bpmnElement="F23"><di:waypoint x="1660" y="565" /><di:waypoint x="1710" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F24_di" bpmnElement="F24"><di:waypoint x="1746" y="565" /><di:waypoint x="1790" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F25_di" bpmnElement="F25"><di:waypoint x="1890" y="565" /><di:waypoint x="1930" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F26_di" bpmnElement="F26"><di:waypoint x="2030" y="565" /><di:waypoint x="2070" y="565" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M1_di" bpmnElement="M1"><di:waypoint x="208" y="90" /><di:waypoint x="208" y="207" /><bpmndi:BPMNLabel><dc:Bounds x="212" y="96" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M2_di" bpmnElement="M2"><di:waypoint x="208" y="700" /><di:waypoint x="208" y="583" /><bpmndi:BPMNLabel><dc:Bounds x="212" y="680" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M3_di" bpmnElement="M3"><di:waypoint x="460" y="90" /><di:waypoint x="460" y="185" /><bpmndi:BPMNLabel><dc:Bounds x="464" y="96" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M4_di" bpmnElement="M4"><di:waypoint x="1610" y="185" /><di:waypoint x="1610" y="90" /><bpmndi:BPMNLabel><dc:Bounds x="1614" y="96" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M5_di" bpmnElement="M5"><di:waypoint x="1728" y="90" /><di:waypoint x="1728" y="207" /><bpmndi:BPMNLabel><dc:Bounds x="1732" y="96" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M6_di" bpmnElement="M6"><di:waypoint x="1980" y="90" /><di:waypoint x="1980" y="185" /><bpmndi:BPMNLabel><dc:Bounds x="1984" y="96" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M7_di" bpmnElement="M7"><di:waypoint x="1728" y="700" /><di:waypoint x="1728" y="583" /><bpmndi:BPMNLabel><dc:Bounds x="1732" y="680" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M8_di" bpmnElement="M8"><di:waypoint x="1840" y="700" /><di:waypoint x="1840" y="605" /><bpmndi:BPMNLabel><dc:Bounds x="1844" y="680" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M9_di" bpmnElement="M9"><di:waypoint x="1980" y="605" /><di:waypoint x="1980" y="700" /><bpmndi:BPMNLabel><dc:Bounds x="1984" y="680" width="90" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
