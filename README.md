@@ -11,3 +11,4 @@
 | Part 3: Orbitask optimisation challenge (Docker) | [orbitask-workshop/README.md](orbitask-workshop/README.md) |
 | BPMN 2.0.2 specification / ARIS cheat sheet | `bpmn-formal.pdf`, `cheat-sheet.pdf` |
 | Course slides used as background | `Old Slides/` |
+| Open tasks | [TODO.md](TODO.md) |
