@@ -36,7 +36,7 @@ Slide deck covering:
 
 #### **Part 2 : Guided Modeling Exercise 1**
 
-Mateirials: pen papers, 6 differents cheat sheets [BPMN Notation](https://stichtingfontys.sharepoint.com/sites/ESD-BPMNGroup/Gedeelde%20documenten/General/references/cheat-sheet.pdf?TeamsCID=5d56ba11-46d3-45f2-ad46-1c4cad276f34) printed , printed version of correct way(see image under here or [`pizzeria_process.bpmn`](../pizzeria_process.bpmn)), list of different activities in a pizzeria
+Materials: pen papers, 6 differents cheat sheets [BPMN Notation](https://stichtingfontys.sharepoint.com/sites/ESD-BPMNGroup/Gedeelde%20documenten/General/references/cheat-sheet.pdf?TeamsCID=5d56ba11-46d3-45f2-ad46-1c4cad276f34) printed , printed version of correct way(see image under here or [`pizzeria_process.bpmn`](../pizzeria_process.bpmn)), list of different activities in a pizzeria
 
 Preparation: hand out the printed cheat sheet and the written task, divide the class into groups of 4 people.
 
@@ -53,17 +53,9 @@ Example BPMN:
 
 ![Pizzeria example BPMN (see pizzeria_process.bpmn)](media/od-plan-02.png)
 
-#### **Part 3 : Unguided Optimization Challenge**
+#### **Part 3 : Unguided Optimization Challenge** 
 
 Goal: Have students apply the learned. In a complex Process optimisation case.
-
-*Maybe have different priorities to show the groups the differences between what you focus on*
-
-Then at the end we all look together or they grade between ecah other and get a nice discussion out of it
-
-Task: look at this bpmn diagram. All get the same one.
-
-It depicts either SaaS company that has a complex process for development, HR, customer support,marketing etc. lots of opportunities to improve
 
 > Implemented as the **Orbitask** Docker app: each group gets one of 7 manager tickets and the as-is BPMN models of the fictional SaaS company in draw.io. See [`orbitask-workshop/README.md`](../orbitask-workshop/README.md).
 
