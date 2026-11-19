@@ -43,10 +43,17 @@ Wait for the notification, read the manager's message, and click **Open in the p
 - Write your proposal (tools, expected gain) as a **reply in the chat**.
 - Everything is saved automatically ("All changes saved" at the top).
 
+### Finished early?
+
+Click **Get an extra request** (in the chat list, on the Activity page or in the Guide). You get the next process
+after yours (your problem number + 1). Work in the same file: make a new to-be page for it and reply to that
+manager in the chat.
+
 ### 4. Hand in
 
-In the editor click **Hand in (download)**. You get one `.drawio` file containing your diagrams plus an extra page
-with your chat replies. Give that file to your teacher.
+In the editor click **Hand in (download)**. You get one `.drawio` file containing your diagrams plus one extra page
+per request with your chat replies. Give that file to your teacher. If you did an extra request, it is in the same
+file – you only hand in once.
 
 ### Stop / continue later
 
@@ -84,7 +91,14 @@ or uncomment `PROBLEM` in `docker-compose.yml`.
 | 7 | ORB-1090 | P10 Monthly management reporting | CEO |
 
 The container log shows which problem a group got: `docker logs orbitask`.
-The answer key is **not** in the container (keep the PDF for yourself).
+The solutions are **not** in this folder or image. They are in the separate presenter image
+[`../orbitask-presenter`](../orbitask-presenter) (all requests, reference solution next to each request, and a
+to-be page after each as-is process) – don't give that folder to students.
+
+### Groups that finish early
+A group that is done clicks **Get an extra request** and gets the next problem: **their number + 1** (7 → 1).
+It goes into the same container and the same file, so **Hand in** gives you one file per group with both requests
+(one reply page per request). The log shows extra requests too.
 
 ### Avoid 30 downloads in class (optional)
 Build once on your laptop and share the image file (USB / shared drive):
@@ -109,4 +123,5 @@ docker run -d -p 8080:8080 -v orbitask-data:/data --name orbitask orbitask-works
 - `app/server.js` – small Node.js server (no npm packages): chat API, autosave, hand-in export.
 - `app/public/` – the Teams-style front end.
 - `app/data/` – the as-is processes (`orbitask_as_is_processes.drawio`) and the 7 manager messages (`tickets.json`).
+- Presenter mode (`PRESENTER=1`) is only switched on by the presenter image, which adds the solution files.
 - draw.io itself (official release, version pinned in the `Dockerfile`) is downloaded during the build.

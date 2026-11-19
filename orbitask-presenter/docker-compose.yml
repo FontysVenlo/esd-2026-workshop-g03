@@ -1,0 +1,18 @@
+name: orbitask-presenter
+
+services:
+  presenter:
+    build:
+      context: .
+      additional_contexts:
+        workshop: ../orbitask-workshop    # the app code is shared with the student image
+    image: orbitask-presenter
+    container_name: orbitask-presenter
+    ports:
+      - "8090:8080"                       # 8090, so it can run next to a student container on 8080
+    volumes:
+      - orbitask-presenter-data:/data
+    restart: unless-stopped
+
+volumes:
+  orbitask-presenter-data:

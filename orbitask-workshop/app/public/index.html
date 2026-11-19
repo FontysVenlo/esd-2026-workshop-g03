@@ -37,6 +37,10 @@
     <svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M9 8h6M9 12h6"/></svg>
     <span>Guide</span>
   </button>
+  <button class="rail-btn" data-view="solutions" title="Reference solutions (presenter)" id="railSolutions" hidden>
+    <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+    <span>Solutions</span>
+  </button>
 </nav>
 
 <main id="main">
@@ -64,11 +68,12 @@
   <section class="view chat-layout" id="view-chat" hidden>
     <aside class="chat-list">
       <div class="pane-title">Chat</div>
-      <button class="chat-item" id="chatItemManager" data-chat="manager"></button>
+      <div id="chatItems"></div>
       <button class="chat-item" id="chatItemGuide" data-chat="guide">
         <span class="avatar bot">?</span>
         <span class="ci-text"><b>Workshop guide</b><small>How to work on your request</small></span>
       </button>
+      <div id="chatExtra"></div>
     </aside>
     <div class="conversation">
       <div class="conv-head" id="convHead"></div>
@@ -107,6 +112,11 @@
   <!-- guide -->
   <section class="view" id="view-guide" hidden>
     <div class="guide" id="guide"></div>
+  </section>
+
+  <!-- solutions (presenter image only) -->
+  <section class="view" id="view-solutions" hidden>
+    <div class="guide" id="solutions"></div>
   </section>
 </main>
 

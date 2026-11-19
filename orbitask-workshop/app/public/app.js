@@ -14,11 +14,17 @@
   const PRIO_COLOR = { Critical: '#B91C1C', High: '#C2410C', Medium: '#1D4ED8' };
 
   let S = null;              // session from the server
-  let T = null;              // assigned ticket
-  let unread = false;
+  let TICKETS = [];          // tickets this container has (assigned + extra; all of them in presenter mode)
+  let T = null;              // ticket currently shown (chat / brief / editor)
+  const unread = new Set();  // ticket numbers with an unread message
   let currentView = null;
-  let currentChat = 'manager';
+  let currentChat = null;    // ticket number or 'guide'
   let animating = false;
+
+  const PRESENTER = () => S && S.presenter;
+  const byNo = n => TICKETS.find(t => t.number === n);
+  const isSeen = n => !!(S.seen && S.seen[n]);
+  const delivered = t => isSeen(t.number) || unread.has(t.number);
 
   // ------------------------------------------------------------ api
   async function api(path, opts) {
@@ -32,13 +38,14 @@
 
   // ------------------------------------------------------------ views
   function showView(name) {
-    if (name !== 'welcome' && S && !S.team && !S.chatSeen && !S._started) name = 'welcome';
+    if (name !== 'welcome' && S && !PRESENTER() && !S.team && !isSeen(S.primary) && !S._started) name = 'welcome';
     document.querySelectorAll('.view').forEach(v => { v.hidden = v.id !== 'view-' + name; });
     document.querySelectorAll('.rail-btn').forEach(b => b.classList.toggle('active', b.dataset.view === name));
     currentView = name;
     if (name === 'chat') openChat(currentChat);
     if (name === 'editor') ensureEditor();
     if (name === 'activity') renderActivity();
+    if (name === 'solutions') renderSolutions();
   }
 
   document.querySelectorAll('.rail-btn').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
@@ -50,12 +57,25 @@
     return a;
   }
 
-  function setUnread(on) {
-    unread = on;
-    $('#badgeChat').hidden = !on;
-    $('#badgeActivity').hidden = !on;
-    document.title = (on ? '(1) ' : '') + 'Orbitask Connect';
+  function updateBadges() {
+    const n = unread.size;
+    ['#badgeChat', '#badgeActivity'].forEach(id => { $(id).hidden = !n; $(id).textContent = n; });
+    document.title = (n ? `(${n}) ` : '') + (PRESENTER() ? 'Orbitask Connect – Presenter' : 'Orbitask Connect');
     renderChatList();
+  }
+  function setUnread(num, on) {
+    if (on) unread.add(num); else unread.delete(num);
+    updateBadges();
+  }
+
+  // Switch the "current" ticket (chat header, request panel, editor page).
+  function selectTicket(num) {
+    const t = byNo(num);
+    if (!t || t === T) return;
+    T = t;
+    $('#ticketChip').textContent = `${T.id} · ${T.process}`;
+    renderBrief();
+    if (editorReady) goToPage(T.page_id);
   }
 
   // ------------------------------------------------------------ welcome + notification
@@ -70,28 +90,30 @@
     showTeam();
     showView('activity');
     await sleep(2500);
-    deliverNotification();
+    deliverNotification(byNo(S.primary));
   }
 
   function showTeam() {
     const l = $('#teamLabel');
-    l.textContent = S.team; l.hidden = !S.team; l.title = S.team;
+    const text = PRESENTER() ? 'Presenter' : S.team;
+    l.textContent = text; l.hidden = !text; l.title = text;
+    l.classList.toggle('presenter', !!PRESENTER());
   }
 
-  function deliverNotification() {
-    setUnread(true);
+  function deliverNotification(t, quiet) {
+    setUnread(t.number, true);
     renderActivity();
-    const t = $('#toast');
-    t.innerHTML = '';
-    t.appendChild(avatar(T.from_name, T.color, T.initials));
-    const box = el('div');
-    box.appendChild(el('div', 't-app', 'Orbitask Connect · now'));
-    const who = el('b', null, T.from_name);
-    box.appendChild(who);
-    box.appendChild(el('div', 't-body', T.script[0].text));
-    t.appendChild(box);
-    t.hidden = false;
-    t.onclick = () => { t.hidden = true; currentChat = 'manager'; showView('chat'); };
+    if (quiet) return;
+    const box = $('#toast');
+    box.innerHTML = '';
+    box.appendChild(avatar(t.from_name, t.color, t.initials));
+    const inner = el('div');
+    inner.appendChild(el('div', 't-app', 'Orbitask Connect · now'));
+    inner.appendChild(el('b', null, t.from_name));
+    inner.appendChild(el('div', 't-body', t.script[0].text));
+    box.appendChild(inner);
+    box.hidden = false;
+    box.onclick = () => { box.hidden = true; openChat(t.number); };
     try { // short, quiet notification sound
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator(), g = ctx.createGain();
@@ -103,37 +125,84 @@
   function renderActivity() {
     const list = $('#activityList');
     list.innerHTML = '';
-    if (!S.chatSeen && !unread) {
+    const shown = TICKETS.filter(delivered);
+    if (!shown.length) {
       const w = el('div', 'waiting');
       w.appendChild(el('div', null, 'No activity yet.'));
       w.appendChild(el('small', null, 'Waiting for messages from your colleagues…'));
       list.appendChild(w);
       return;
     }
-    const item = el('button', 'activity-item' + (unread ? ' unread' : ''));
-    item.appendChild(avatar(T.from_name, T.color, T.initials));
-    const txt = el('div');
-    const b = el('b', null, `${T.from_name} sent you a message`);
-    txt.appendChild(b);
-    txt.appendChild(el('small', null, `${T.from_role} · ${T.title}`));
-    item.appendChild(txt);
-    item.onclick = () => { currentChat = 'manager'; showView('chat'); };
-    list.appendChild(item);
+    shown.slice().reverse().forEach(t => {
+      const item = el('button', 'activity-item' + (unread.has(t.number) ? ' unread' : ''));
+      item.appendChild(avatar(t.from_name, t.color, t.initials));
+      const txt = el('div');
+      txt.appendChild(el('b', null, `${t.from_name} sent you a message${t.extra ? ' (extra request)' : ''}`));
+      txt.appendChild(el('small', null, `${t.from_role} · ${t.title}`));
+      item.appendChild(txt);
+      item.onclick = () => openChat(t.number);
+      list.appendChild(item);
+    });
+    if (!PRESENTER()) list.appendChild(extraCard());
+  }
+
+  // ------------------------------------------------------------ extra request ("finished early?")
+  function extraCard() {
+    const c = el('div', 'extra-card');
+    if (!S.next) {
+      c.appendChild(el('b', null, 'You have every request already. Impressive!'));
+      return c;
+    }
+    c.appendChild(el('b', null, 'Finished early?'));
+    c.appendChild(el('small', null, `Take on the next request: ${S.next.process}. `
+      + 'Hand in still gives you one file with all your requests.'));
+    const btn = el('button', 'ghost', 'Get an extra request');
+    btn.onclick = requestExtra;
+    c.appendChild(btn);
+    return c;
+  }
+
+  async function requestExtra() {
+    if (!S.next) return;
+    const ok = await confirmDlg('Take on an extra request?',
+      `You will get the request for "${S.next.process}" (the next process after yours). Keep your current work – `
+      + "make the extra process's to-be on a new page too. 'Hand in' then downloads one file with everything.",
+      'Yes, give us more');
+    if (!ok) return;
+    const r = await post('/api/extra');
+    TICKETS.push(r.ticket);
+    S.next = r.next;
+    renderChatList();
+    renderGuide();
+    renderActivity();
+    if (currentView !== 'activity') showView('activity');
+    await sleep(1500);
+    deliverNotification(r.ticket);
   }
 
   // ------------------------------------------------------------ chat
   function renderChatList() {
-    const it = $('#chatItemManager');
-    it.innerHTML = '';
-    it.appendChild(avatar(T.from_name, T.color, T.initials));
-    const tx = el('span', 'ci-text');
-    const b = el('b', unread ? 'unread' : null, T.from_name);
-    tx.appendChild(b);
-    tx.appendChild(el('small', null, S.chatSeen || unread ? T.script[0].text : T.from_role));
-    it.appendChild(tx);
-    document.querySelectorAll('.chat-item').forEach(c => c.classList.toggle('active', c.dataset.chat === currentChat));
+    const wrap = $('#chatItems');
+    wrap.innerHTML = '';
+    TICKETS.forEach(t => {
+      const it = el('button', 'chat-item');
+      it.dataset.chat = t.number;
+      it.appendChild(avatar(t.from_name, t.color, t.initials));
+      const tx = el('span', 'ci-text');
+      tx.appendChild(el('b', unread.has(t.number) ? 'unread' : null, t.from_name));
+      const sub = delivered(t) ? t.script[0].text : t.from_role;
+      tx.appendChild(el('small', null, (PRESENTER() || t.extra ? t.id + ' · ' : '') + sub));
+      it.appendChild(tx);
+      if (!delivered(t) && !PRESENTER()) it.disabled = true;
+      it.onclick = () => openChat(t.number);
+      wrap.appendChild(it);
+    });
+    document.querySelectorAll('.chat-item').forEach(c => c.classList.toggle('active', String(c.dataset.chat) === String(currentChat)));
+    const ex = $('#chatExtra');
+    ex.innerHTML = '';
+    if (!PRESENTER() && isSeen(S.primary)) ex.appendChild(extraCard());
   }
-  document.querySelectorAll('.chat-item').forEach(c => c.addEventListener('click', () => openChat(c.dataset.chat)));
+  $('#chatItemGuide').addEventListener('click', () => openChat('guide'));
 
   function convHead(kind) {
     const h = $('#convHead');
@@ -148,7 +217,7 @@
     h.appendChild(avatar(T.from_name, T.color, T.initials));
     const w = el('div', 'who');
     w.appendChild(el('b', null, T.from_name));
-    w.appendChild(el('small', null, `${T.from_role} · ticket ${T.id}`));
+    w.appendChild(el('small', null, `${T.from_role} · ticket ${T.id}${T.extra ? ' · extra request' : ''}`));
     h.appendChild(w);
     const p = el('span', 'prio', T.priority.toUpperCase());
     p.style.background = PRIO_COLOR[T.priority] || '#555';
@@ -160,7 +229,8 @@
     if (!mine) g.appendChild(who === 'guide' ? el('span', 'avatar bot', '?') : avatar(T.from_name, T.color, T.initials));
     const col = el('div', 'bubbles');
     const meta = el('div', 'msg-meta');
-    meta.appendChild(el('b', null, mine ? (S.team || 'You') : (who === 'guide' ? 'Workshop guide' : T.from_name)));
+    meta.appendChild(el('b', null, mine ? (PRESENTER() ? 'Presenter' : (S.team || 'You'))
+      : (who === 'guide' ? 'Workshop guide' : T.from_name)));
     meta.appendChild(document.createTextNode(hhmm(time)));
     col.appendChild(meta);
     g.appendChild(col);
@@ -203,15 +273,19 @@
     return index === 0 ? T.ack : 'Noted, thanks for the update!';
   }
 
+  const repliesFor = n => S.replies.filter(r => r.ticket === n);
+
   function renderReplies() {
-    S.replies.forEach((r, i) => {
+    repliesFor(T.number).forEach((r, i) => {
       groupFor('me', r.at, true).appendChild(el('div', 'bubble', r.text));
       groupFor('manager', r.at, false).appendChild(el('div', 'bubble', ackText(i)));
     });
   }
 
   async function openChat(kind) {
+    if (kind == null) kind = TICKETS.some(delivered) ? (TICKETS.find(t => unread.has(t.number)) || T).number : 'guide';
     currentChat = kind;
+    if (kind !== 'guide') selectTicket(kind);
     renderChatList();
     if (currentView !== 'chat') { showView('chat'); return; }
     convHead(kind);
@@ -224,22 +298,31 @@
       col.appendChild(bubbleFor({ type: 'text', text: 'Hi! I explain how this workshop works.' }));
       col.appendChild(bubbleFor({ type: 'list', intro: 'How to work:', items: S.guide.tips }));
       col.appendChild(bubbleFor({ type: 'list', intro: 'Rules from Orbitask management:', items: S.guide.constraints }));
+      if (!PRESENTER()) {
+        col.appendChild(bubbleFor({ type: 'text', text: 'Finished early? Click "Get an extra request" in the chat '
+          + 'list. You get the next process (the one after yours). Do it in the same file – "Hand in" downloads '
+          + 'one file with both requests and all your replies.' }));
+      }
       return;
     }
-    if (!S.chatSeen && !unread) { // nothing received yet
-      composer.classList.add('disabled');
-      msgs.appendChild(el('div', 'waiting', 'No messages yet.'));
-      return;
+    const num = T.number;
+    if (!delivered(T)) { // nothing received yet
+      if (PRESENTER()) { deliverNotification(T, true); } else {
+        composer.classList.add('disabled');
+        msgs.appendChild(el('div', 'waiting', 'No messages yet.'));
+        return;
+      }
     }
     composer.classList.remove('disabled');
-    if (!S.chatSeen) {
+    if (!isSeen(num)) {
       if (animating) return;
       animating = true;
       composer.classList.add('disabled');
-      setUnread(false);
+      setUnread(num, false);
       $('#toast').hidden = true;
       const col = groupFor('manager', new Date(), false);
       for (const item of T.script) {
+        if (currentChat !== num) break; // user switched chat during the animation
         const typing = el('div', 'bubble typing');
         typing.innerHTML = '<i></i><i></i><i></i>';
         col.appendChild(typing); scrollDown();
@@ -248,15 +331,16 @@
         typing.replaceWith(bubbleFor(item)); scrollDown();
         await sleep(350);
       }
-      S.chatSeen = true;
+      S.seen[num] = true;
       animating = false;
-      composer.classList.remove('disabled');
-      post('/api/seen');
+      post('/api/seen', { ticket: num });
       renderChatList();
-      $('#replyInput').focus();
+      renderActivity();
+      if (currentChat === num) { composer.classList.remove('disabled'); $('#replyInput').focus(); }
+      else if (currentView === 'chat') openChat(currentChat);
       return;
     }
-    setUnread(false);
+    setUnread(num, false);
     const col = groupFor('manager', S.createdAt, false);
     T.script.forEach(item => col.appendChild(bubbleFor(item)));
     renderReplies();
@@ -271,20 +355,23 @@
   async function sendReply() {
     const input = $('#replyInput');
     const text = input.value.trim();
-    if (!text || currentChat !== 'manager' || !S.chatSeen) return;
+    if (!text || currentChat === 'guide' || !isSeen(T.number)) return;
+    const num = T.number;
     input.value = '';
-    const r = await post('/api/reply', { text });
+    const r = await post('/api/reply', { text, ticket: num });
     S.replies = r.replies;
-    const idx = S.replies.length - 1;
-    groupFor('me', S.replies[idx].at, true).appendChild(el('div', 'bubble', text));
+    const idx = repliesFor(num).length - 1;
+    groupFor('me', new Date(), true).appendChild(el('div', 'bubble', text));
     scrollDown();
     await sleep(900);
+    if (currentChat !== num) return;
     const col = groupFor('manager', new Date(), false);
     const typing = el('div', 'bubble typing'); typing.innerHTML = '<i></i><i></i><i></i>';
     col.appendChild(typing); scrollDown();
     await sleep(1600);
     typing.replaceWith(el('div', 'bubble', ackText(idx)));
     scrollDown();
+    renderChatList();
   }
 
   // ------------------------------------------------------------ guide page
@@ -298,24 +385,98 @@
     const ol = el('ol'); S.guide.tips.forEach(t => ol.appendChild(el('li', null, t))); c1.appendChild(ol); g.appendChild(c1);
     const c2 = el('div', 'card'); c2.appendChild(el('h2', null, 'Rules from Orbitask management'));
     const ul = el('ul'); S.guide.constraints.forEach(t => ul.appendChild(el('li', null, t))); c2.appendChild(ul); g.appendChild(c2);
+    if (!PRESENTER()) {
+      const c4 = el('div', 'card'); c4.appendChild(el('h2', null, 'Finished early?'));
+      c4.appendChild(el('p', null, 'Take on a second request: you get the next process after yours (your problem + 1). '
+        + 'Work in the same file – make a new to-be page for it – and reply to that manager in the chat.'));
+      const extras = TICKETS.filter(t => t.extra);
+      if (extras.length) c4.appendChild(el('p', null, 'Extra requests you have: ' + extras.map(t => `${t.id} (${t.process})`).join(', ')));
+      if (S.next) {
+        const b = el('button', 'primary', 'Get an extra request'); b.onclick = requestExtra; c4.appendChild(b);
+      }
+      g.appendChild(c4);
+    }
     const c3 = el('div', 'card'); c3.appendChild(el('h2', null, 'Handing in'));
     c3.appendChild(el('p', null, 'Click "Hand in (download)" in the process editor. You get one .drawio file with your diagrams '
-      + 'and an extra page containing your written replies to the manager. Give that file to your teacher.'));
+      + 'and an extra page per request containing your written replies to the manager. Give that file to your teacher. '
+      + 'If you did an extra request, it is in the same file – you only hand in once.'));
     g.appendChild(c3);
   }
 
+  // ------------------------------------------------------------ presenter: reference solutions
+  function solutionBlock(t, open) {
+    const s = t.solution;
+    const d = el('details', 'solution');
+    d.open = !!open;
+    d.appendChild(el('summary', null, 'Reference solution'));
+    if (!s) { d.appendChild(el('p', null, 'No solution available.')); return d; }
+    d.appendChild(el('p', 'sol-summary', s.summary));
+    [['What changes (as-is → to-be)', s.changes], ['IT tools', s.tools], ['Expected gain', s.gain],
+     ['Discussion points', s.discussion]].forEach(([h, items]) => {
+      if (!items || !items.length) return;
+      d.appendChild(el('h4', null, h));
+      const ul = el('ul'); items.forEach(x => ul.appendChild(el('li', null, x))); d.appendChild(ul);
+    });
+    const bar = el('div', 'sol-actions');
+    const asis = el('button', 'ghost', 'Show as-is');
+    asis.onclick = () => openInEditor(t, false);
+    const tobe = el('button', 'primary', 'Show to-be solution');
+    tobe.onclick = () => openInEditor(t, true);
+    bar.appendChild(asis); bar.appendChild(tobe);
+    d.appendChild(bar);
+    return d;
+  }
+
+  function openInEditor(t, tobe) {
+    selectTicket(t.number);
+    pendingPage = tobe ? t.page_id + '-tobe' : t.page_id;
+    showView('editor');
+    if (editorReady) { goToPage(pendingPage); pendingPage = null; }
+  }
+
+  function renderSolutions() {
+    const g = $('#solutions');
+    g.innerHTML = '';
+    g.appendChild(el('h1', null, 'Reference solutions'));
+    g.appendChild(el('p', null, 'One good answer per request – not the only one. The draw.io file in this presenter '
+      + 'container has a green TO-BE page right after every as-is process.'));
+    TICKETS.forEach(t => {
+      const c = el('div', 'card sol-card');
+      const head = el('div', 'from');
+      head.appendChild(avatar(t.from_name, t.color, t.initials));
+      const hw = el('div');
+      hw.appendChild(el('b', null, `#${t.number} · ${t.id} – ${t.title}`));
+      hw.appendChild(el('small', null, `${t.process} · ${t.from_name}, ${t.from_role}`));
+      head.appendChild(hw);
+      c.appendChild(head);
+      c.appendChild(solutionBlock(t, false));
+      g.appendChild(c);
+    });
+  }
+
   // ------------------------------------------------------------ editor (draw.io embed)
-  let frame = null, editorReady = false, pendingXml = null, saving = false, saveTimer = null;
+  let frame = null, editorReady = false, pendingXml = null, saving = false, saveTimer = null, pendingPage = null;
 
   function renderBrief() {
     const b = $('#brief');
     b.innerHTML = '';
-    b.appendChild(el('small', 'muted', `${T.id} · ${T.priority} priority`));
+    if (TICKETS.length > 1) {
+      const sel = el('select', 'brief-switch');
+      sel.title = 'Switch request';
+      TICKETS.filter(t => PRESENTER() || delivered(t)).forEach(t => {
+        const o = el('option', null, `${t.id} · ${t.process}${t.extra ? ' (extra)' : ''}`);
+        o.value = t.number; o.selected = t === T; sel.appendChild(o);
+      });
+      sel.onchange = () => selectTicket(parseInt(sel.value, 10));
+      if (sel.options.length > 1) b.appendChild(sel);
+    }
+    b.appendChild(el('small', 'muted', `${T.id} · ${T.priority} priority${T.extra ? ' · extra request' : ''}`));
     b.appendChild(el('h2', null, T.title));
     const from = el('div', 'from');
     from.appendChild(avatar(T.from_name, T.color, T.initials));
     const fw = el('div'); fw.appendChild(el('b', null, T.from_name)); fw.appendChild(el('small', null, T.from_role));
     from.appendChild(fw); b.appendChild(from);
+    if (PRESENTER()) b.appendChild(solutionBlock(T, true));
     b.appendChild(el('h3', null, 'Process & scope'));
     b.appendChild(el('div', null, `${T.process}. ${T.scope}.`));
     T.script.filter(i => i.type === 'list').forEach(i => {
@@ -324,7 +485,7 @@
     });
     const link = el('button', 'ghost', 'Open the chat');
     link.style.marginTop = '14px';
-    link.onclick = () => { currentChat = 'manager'; showView('chat'); };
+    link.onclick = () => openChat(T.number);
     b.appendChild(link);
   }
 
@@ -335,11 +496,13 @@
 
   function ensureEditor() {
     if (frame) return;
-    if (window.innerWidth < 1600) $('.editor-body').classList.add('no-brief');
+    if (window.innerWidth < 1600 && !PRESENTER()) $('.editor-body').classList.add('no-brief');
     const params = new URLSearchParams({
       embed: '1', proto: 'json', spin: '1', noExitBtn: '1', noSaveBtn: '1', saveAndExit: '0',
-      libraries: '1', libs: 'general;bpmn2', ui: 'kennedy', stealth: '1', pwa: '0', lang: 'en', 'page-id': T.page_id,
+      libraries: '1', libs: 'general;bpmn2', ui: 'kennedy', stealth: '1', pwa: '0', lang: 'en',
+      'page-id': pendingPage || T.page_id,
     });
+    pendingPage = null;
     frame = document.createElement('iframe');
     frame.title = 'draw.io process editor';
     frame.src = '/drawio/index.html?' + params.toString();
@@ -372,6 +535,18 @@
     } catch (e) { /* not critical */ }
   }
 
+  // Jump to a page of the open diagram (used when switching between requests / showing a solution page).
+  function goToPage(pageId) {
+    try {
+      const ui = frame.contentWindow.__orbitaskUi;
+      if (!ui || !ui.pages) return;
+      const page = ui.pages.find(p => p.getId() === pageId);
+      if (!page || page === ui.currentPage) return;
+      ui.selectPage(page);
+      setTimeout(() => { try { ui.actions.get('fitWindow').funct(); } catch (e) { /* ignore */ } }, 200);
+    } catch (e) { /* not critical */ }
+  }
+
   async function loadIntoEditor() {
     const xml = await api('/api/diagram');
     frame.contentWindow.postMessage(JSON.stringify({
@@ -388,6 +563,7 @@
       editorReady = true;
       const l = document.querySelector('.frame-loading'); if (l) l.remove();
       openPanels();
+      if (pendingPage) { goToPage(pendingPage); pendingPage = null; }
       setStatus(S.savedAt ? 'All changes saved · ' + hhmm(S.savedAt) : 'Ready – changes are saved automatically', 'ok');
     } else if (msg.event === 'autosave' || msg.event === 'save') {
       if (msg.xml) queueSave(msg.xml, msg.event === 'save' ? 0 : 1000);
@@ -440,7 +616,9 @@
     const a = document.createElement('a');
     a.href = '/api/handin'; a.download = '';
     document.body.appendChild(a); a.click(); a.remove();
-    setStatus('Hand-in file downloaded – give it to your teacher.', 'ok');
+    const n = PRESENTER() ? 1 : TICKETS.length;
+    setStatus(n > 1 ? `Hand-in file downloaded (${n} requests in one file) – give it to your teacher.`
+      : 'Hand-in file downloaded – give it to your teacher.', 'ok');
   });
 
   function confirmDlg(title, text, okLabel) {
@@ -467,15 +645,24 @@
   // ------------------------------------------------------------ boot
   async function boot() {
     S = await api('/api/session');
-    T = S.ticket;
-    $('#ticketChip').textContent = `${T.id} · ${T.process}`;
-    renderBrief();
+    S.seen = S.seen || {};
+    TICKETS = S.tickets;
+    T = null;
+    selectTicket(S.primary);
+    if (PRESENTER()) {
+      document.body.classList.add('presenter');
+      $('#railSolutions').hidden = false;
+    }
     renderGuide();
-    renderChatList();
     showTeam();
-    if (!S.team && !S.chatSeen) { showView('welcome'); $('#teamInput').focus(); return; }
+    // Requests delivered earlier but never opened stay unread after a reload.
+    TICKETS.forEach(t => { if (!isSeen(t.number) && t.extra) unread.add(t.number); });
+    updateBadges();
+    if (PRESENTER()) { S._started = true; showView('solutions'); return; }
+    if (!S.team && !isSeen(S.primary)) { showView('welcome'); $('#teamInput').focus(); return; }
     S._started = true;
-    if (!S.chatSeen) { showView('activity'); await sleep(1200); deliverNotification(); return; }
+    if (!isSeen(S.primary)) { showView('activity'); await sleep(1200); deliverNotification(byNo(S.primary)); return; }
+    currentChat = S.primary;
     showView('chat');
   }
 

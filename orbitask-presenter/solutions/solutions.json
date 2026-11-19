@@ -1,0 +1,224 @@
+{
+ "note": "Reference solutions for the presenter image. One possible good answer per ticket, not the only one. Keys = ticket number (1-7).",
+ "solutions": {
+  "1": {
+   "summary": "Replace the shared inbox + Excel with a CRM. The website form writes the lead straight into the CRM, which checks duplicates, assigns a rep by rule and starts a 24 h follow-up timer. Humans only call, quote and approve.",
+   "changes": [
+    "'Read form notification' + 'Copy lead data into Excel' → service task: web form creates the lead in the CRM (no retyping, no typos)",
+    "'Check Excel by hand for duplicates' → service task: automatic duplicate check (email / company domain), merge into the existing lead",
+    "'Email lead to a rep (chosen from memory)' → service task: assignment rule (territory or round-robin), rep notified in Teams",
+    "New: 24 h SLA timer – if the rep has not called, the sales manager is alerted (no forgotten leads)",
+    "Prospect books a demo slot himself (Bookings link in the confirmation email)",
+    "Quote built in the CRM from the current price list; approval only above a discount limit (Teams approval)",
+    "Signed quote via e-signature; CRM marks the deal 'won' and notifies Finance + Customer Success automatically"
+   ],
+   "tools": [
+    "CRM: HubSpot, Microsoft Dynamics 365 Sales or Salesforce (central lead database, rules, dashboards)",
+    "Web form connected to the CRM (or Microsoft Forms + Power Automate)",
+    "Power Automate / CRM workflows: duplicate check, assignment, SLA timer, Teams notifications",
+    "Microsoft Bookings for demo slots",
+    "E-signature: DocuSign / Adobe Sign"
+   ],
+   "gain": [
+    "Manual data entry: 40 × 15 min = 10 h/week → ~0 h (assistant free for other work)",
+    "Leads never contacted: ~10% → ~0% (every lead has an owner + timer)",
+    "Form → first call: 3 working days → < 24 h",
+    "3× more leads next quarter without hiring",
+    "Wrong prices in quotes (1 in 10) → 0, approval 1–3 days → same day"
+   ],
+   "discussion": [
+    "Where does the human stay? Calling, demo, discount decisions.",
+    "Round-robin vs. territory vs. lead scoring – what is fair for the reps?",
+    "GDPR: what lead data may we store and for how long?"
+   ]
+  },
+  "2": {
+   "summary": "The 'won' deal in the CRM triggers onboarding automatically. The workspace is created by script, the customer admin uploads users in a self-service portal (or connects SSO) where the list is validated immediately, accounts are created in bulk and users set their own password via an activation link.",
+   "changes": [
+    "'New customer' email + Excel tracker → trigger 'Deal won' from the CRM, onboarding record created automatically",
+    "'Create customer workspace in admin console' → service task (provisioning script / admin API)",
+    "'Email customer: send user list (Excel)' → customer admin invited to a self-service portal; upload CSV or connect SSO/SCIM",
+    "'Errors in the list?' loop through CS + Support → validation in the portal, the admin fixes errors himself right away",
+    "'Create user accounts one by one' → bulk creation via API (seconds for 300 users)",
+    "'Email each user their password' → activation link, user sets own password + MFA (audit finding closed)",
+    "Support engineer only for special cases (SSO setup, very large or unusual customers)",
+    "Kickoff planned with a booking link instead of email ping-pong; status set to 'onboarded' automatically"
+   ],
+   "tools": [
+    "CRM webhook (deal won) → Power Automate or a small provisioning service",
+    "Orbitask admin API / script for workspace + bulk user creation",
+    "Self-service admin portal with CSV validation; SSO / SCIM with Microsoft Entra ID, Google, Okta",
+    "Activation links (magic link) + MFA instead of passwords by email",
+    "Microsoft Bookings for the kickoff; help-center videos to shorten the 2 h training"
+   ],
+   "gain": [
+    "Contract → first login: 6 working days → < 1 working day (often same day)",
+    "Account creation: ~45 min / 10 users (300 users ≈ 22 h) → minutes",
+    "Error round-trips (1 list in 3) → fixed by the customer immediately in the portal",
+    "Security audit finding: closed (no passwords by email)",
+    "Support engineers free for real support work"
+   ],
+   "discussion": [
+    "Customers pay from day one – what is a week of waiting worth in churn risk?",
+    "Which customers should still get a personal setup (special cases)?",
+    "SSO vs. CSV upload: what fits small vs. big customers?"
+   ]
+  },
+  "3": {
+   "summary": "HR enters the new hire once in an HR system (mandatory fields, no Word form). That single record starts a workflow that creates the identity and all tool accounts by role, orders a pre-configured laptop and informs the hiring manager – all in parallel, early enough before day one.",
+   "changes": [
+    "Paper contract + scan → e-signature, contract stored automatically",
+    "'Fill in Word onboarding form' + 'Email form' + 'Form complete?' loop → one entry in the HR system with mandatory fields (start date, role, team)",
+    "Parallel gateway: IT, hiring manager and laptop order start at the same time instead of one after another",
+    "'Create accounts in 6 tools one by one' → identity in Entra ID; group/role-based access gives M365, Jira, Slack, GitHub automatically",
+    "'Order laptop on supplier website' → standard order from the supplier catalogue, triggered by the workflow",
+    "'Install laptop and software by hand' → Windows Autopilot + Intune: the laptop configures itself at first login",
+    "'Write passwords on a paper note' → passwordless / Temporary Access Pass sent to the new hire, MFA set up on day one"
+   ],
+   "tools": [
+    "HR system (Personio, HiBob, AFAS…) or a Microsoft Form/SharePoint list with mandatory fields",
+    "Power Automate (or the HR system's workflow) as the onboarding orchestrator",
+    "Microsoft Entra ID with role-based groups; SCIM provisioning to Jira, Slack, GitHub",
+    "Windows Autopilot + Intune for zero-touch laptop setup",
+    "E-signature for the contract"
+   ],
+   "gain": [
+    "Incomplete forms: 50% → 0% (mandatory fields)",
+    "IT account work: ~2 h × 8 hires = 16 h/month → < 2 h/month",
+    "Idle new hires: 2–3 days × 8 hires/month (~20 person-days) → 0",
+    "No passwords on paper (security risk removed)",
+    "Better first impression = less early turnover"
+   ],
+   "discussion": [
+    "What must stay human? Welcome, buddy, first-day plan.",
+    "Laptop delivery time: the workflow must start ≥ 2 weeks before the start date.",
+    "Offboarding is the same process backwards – also important for security."
+   ]
+  },
+  "4": {
+   "summary": "Continuous delivery: every merge is built once in a CI/CD pipeline, tested automatically in under an hour and deployed to staging. After a one-click approval it goes live with a blue-green / canary deployment during office hours, with automatic health checks, automatic rollback and generated release notes.",
+   "changes": [
+    "'Build release package on a developer laptop' → build once in the CI pipeline (container image, same artefact everywhere)",
+    "'Run regression tests by hand (Excel, 2 days)' → automated test suite in the pipeline (< 1 h); QA does short exploratory tests of new features only",
+    "'Log bugs in Excel, message devs' → failing pipeline blocks the merge and notifies the developer; bugs tracked in Jira",
+    "'Book release window Friday 22:00' + 'Copy files via FTP' → automated blue-green / canary deployment, any weekday, no downtime",
+    "'Click through the app' → automated health checks + monitoring",
+    "'Restore backup by hand' → automatic rollback in minutes (switch traffic back)",
+    "'Write release notes in Word' + 'Email all customers' → generated from merged tickets, published as changelog / in-app notice",
+    "Human in the loop: code review + product manager approves the release with one click"
+   ],
+   "tools": [
+    "Git + pull requests with code review (GitHub / GitLab / Azure DevOps)",
+    "CI/CD pipeline: GitHub Actions, GitLab CI, Azure Pipelines, Jenkins",
+    "Automated tests (unit, API, UI with Playwright/Selenium)",
+    "Containers (Docker) + Kubernetes or a cloud app service with deployment slots",
+    "Monitoring: Grafana / Azure Monitor / Datadog; feature flags",
+    "Release-notes generator from Jira / commit messages"
+   ],
+   "gain": [
+    "Regression testing: 2 days → < 1 h automated (+ ~2 h exploratory)",
+    "Releases: Friday 22:00 with ~3 h downtime → any weekday, office hours, zero downtime",
+    "Rollback: by hand, 1 in 5 releases → automatic in minutes, and fewer rollbacks thanks to tests",
+    "'Works on my machine' → one reproducible build",
+    "Release frequency: every 2 weeks → several times per week"
+   ],
+   "discussion": [
+    "Writing automated tests costs time first – when does it pay off?",
+    "Who may press 'release'? Separation of duties vs. speed.",
+    "Ops role changes from copying files to maintaining the pipeline and monitoring."
+   ]
+  },
+  "5": {
+   "summary": "Every email or portal request becomes a ticket in a helpdesk system with an owner, status and SLA timer. The customer gets an instant confirmation with suggested help articles, routing is automatic, agents answer from a knowledge base, developer escalations are linked Jira issues, and customers see the status in a portal.",
+   "changes": [
+    "'Read shared support mailbox' → service task: helpdesk creates a ticket automatically (owner, status, SLA)",
+    "New: automatic confirmation with ticket number, portal link and suggested FAQ articles",
+    "'Forward email to an agent who seems free' (team lead, 1.5 h/day) → automatic routing by category / round-robin (optionally AI classification)",
+    "'Search old emails for a similar problem' → knowledge base + suggested answers inside the ticket",
+    "'Forward problem to a developer on Teams' → escalate as a linked Jira issue; status flows back into the ticket",
+    "'Log the case in Excel for monthly report' → reporting comes from the helpdesk automatically",
+    "New: agent adds new answers to the knowledge base; ticket closes automatically + satisfaction survey",
+    "SLA timer: if no first reply within 4 working hours, the team lead is alerted"
+   ],
+   "tools": [
+    "Helpdesk / ticketing: Zendesk, Freshdesk, Jira Service Management (or Dynamics 365 Customer Service)",
+    "Customer portal + knowledge base (self-service, status visible)",
+    "Integration helpdesk ↔ Jira for developer escalations",
+    "AI: categorisation and answer suggestions (human checks before sending)",
+    "SLA dashboard (built in, or Power BI)"
+   ],
+   "gain": [
+    "First reply: 2 working days → instant confirmation + human reply < 4 working hours",
+    "Unanswered emails: ~12% → 0% (every ticket has an owner and an SLA)",
+    "Team lead sorting: ~1.5 h/day (≈ 7.5 h/week) → ~0, time goes to coaching / monitoring",
+    "Status calls: ~30/day → few (status visible in the portal)",
+    "Repeat questions partly solved by self-service (typically 20–30% fewer tickets)"
+   ],
+   "discussion": [
+    "Is an AI-written reply acceptable? Keep a human who checks and sends.",
+    "What SLA is realistic with the current team size?",
+    "Knowledge base needs an owner, otherwise it gets outdated."
+   ]
+  },
+  "6": {
+   "summary": "A billing system does the monthly run on its own: it pulls usage via an API, calculates amounts from the price plans, creates and sends invoices (and collects by direct debit where possible), matches incoming payments from the bank feed and sends reminders. Finance only reviews exceptions.",
+   "changes": [
+    "'Email developers: request usage export' + 'Run SQL query' + 'Email CSV' → scheduled automatic usage import (API)",
+    "'Calculate amounts per customer in Excel' → price plans in the billing system calculate automatically",
+    "New human step: Finance reviews only exceptions (unusual amounts, new or changed contracts)",
+    "'Type invoice in Word' + 'Email invoice PDF' → invoices generated and sent automatically (PDF / e-invoice), SEPA direct debit or card where possible",
+    "'Download bank statement, tick off payments' → automatic matching via bank feed / payment provider",
+    "'Write reminder email' → automatic reminder levels (dunning); unclear payments go to Finance as an exception"
+   ],
+   "tools": [
+    "Subscription billing: Stripe Billing, Chargebee, Recurly (or the invoicing module of Exact Online / Moneybird / Twinfield)",
+    "Usage export via API or scheduled job (no developer interruption)",
+    "Payment provider / SEPA direct debit (Stripe, Mollie, Adyen)",
+    "Bank feed (PSD2) for automatic reconciliation",
+    "E-invoicing (Peppol) for business customers; Power BI for finance analysis"
+   ],
+   "gain": [
+    "Invoicing: 2 people × 4 days = 8 person-days/month → ~0.5 day exception review",
+    "Payment matching: 1 day/month with ~3% mistakes → < 1 h for exceptions only",
+    "All ~900 invoices sent on day 1 (faster cash-in)",
+    "Wrong amounts / late reminders → rare (rules, live payment status)",
+    "Developers no longer interrupted every month",
+    "Finance effort < 1 person-day/month → target reached"
+   ],
+   "discussion": [
+    "Which checks must a human still do (four-eyes principle, audit)?",
+    "Build vs. buy: why not write our own billing code?",
+    "Direct debit changes the customer experience – opt-in needed."
+   ]
+  },
+  "7": {
+   "summary": "Build one central data model with one agreed definition per KPI. Data is loaded automatically every night from the source systems into Power BI, quality checks alert the data owner, and management looks at a live dashboard. The controller analyses instead of copy-pasting.",
+   "changes": [
+    "One-time: KPI glossary – one definition per KPI (e.g. 'active customer'), owned by the controller",
+    "'Email 6 department heads for their KPI Excel' + 'Collect numbers' + 'Email Excel back' → automatic nightly load from CRM, helpdesk, billing, HR (connectors)",
+    "'All files received?' + 'Chase late departments' → disappears (no files any more)",
+    "'Copy-paste all numbers into master Excel' → KPIs calculated in one shared data model",
+    "'Numbers consistent?' + 'Ask department to correct its file' → automatic data-quality checks; alert to the data owner, who fixes data at the source",
+    "'Build PowerPoint charts by hand' → live Power BI dashboard (updated daily)",
+    "Controller writes commentary / analysis; management meeting uses the live dashboard"
+   ],
+   "tools": [
+    "Power BI (already in M365) with dataflows / connectors to the source systems",
+    "Optional data warehouse: Microsoft Fabric, Azure SQL, Snowflake",
+    "KPI glossary on SharePoint / in the Power BI semantic model",
+    "Data-quality rules + alerts (Power Automate / Power BI alerts)"
+   ],
+   "gain": [
+    "Report ready: ~day 13 → available every day (data max. 1 day old)",
+    "Controller copy-paste: 3 days/month → ~0, time for analysis",
+    "6 Excel formats → 1 data model, 1 version of the truth",
+    "No more discussions about whose numbers are right"
+   ],
+   "discussion": [
+    "Agreeing on KPI definitions is a people problem, not a tool problem.",
+    "Who owns data quality – IT, the controller or each department?",
+    "Live dashboards can lead to micromanagement – how often should we really look?"
+   ]
+  }
+ }
+}
