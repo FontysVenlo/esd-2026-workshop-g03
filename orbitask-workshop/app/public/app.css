@@ -138,6 +138,29 @@ main { position: relative; overflow: hidden; }
 .guide .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 12px 0; }
 .guide .card h2 { font-size: 15px; margin: 0 0 6px; }
 .guide ol, .guide ul { padding-left: 20px; margin: 0; }
+.guide .card .primary { margin-top: 10px; }
+
+/* extra request ("finished early?") */
+.extra-card { margin: 12px 6px; padding: 12px; border: 1px dashed #C7C9F2; border-radius: 8px; background: var(--brand-soft);
+  display: flex; flex-direction: column; gap: 6px; }
+.extra-card small { color: var(--muted); line-height: 1.4; }
+.extra-card .ghost { align-self: flex-start; background: #fff; color: var(--brand-dark); font-weight: 600; }
+.activity-list .extra-card { margin: 12px 0 0; }
+.chat-item:disabled { opacity: .55; cursor: default; }
+.brief-switch { width: 100%; margin-bottom: 10px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+
+/* presenter: reference solutions */
+.team-pill.presenter { background: #15803D; }
+.presenter .editor-body:not(.no-brief) { grid-template-columns: 400px 1fr; }
+.solution { margin: 12px 0 4px; border: 1px solid #A7D7B4; border-radius: 8px; background: #F0FAF3; padding: 8px 12px; }
+.solution summary { cursor: pointer; font-weight: 700; color: #166534; }
+.solution .sol-summary { margin: 8px 0; }
+.solution h4 { margin: 10px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #166534; }
+.solution ul { padding-left: 18px; margin: 0; }
+.solution li { margin: 3px 0; }
+.sol-actions { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
+.sol-card .from { display: flex; gap: 10px; align-items: center; }
+.sol-card .from small { color: var(--muted); display: block; }
 
 /* toast */
 .toast { position: fixed; right: 18px; bottom: 18px; width: 360px; background: #fff; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.22);

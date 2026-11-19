@@ -11,8 +11,18 @@ const APP_DIR = __dirname;
 const DATA_DIR = process.env.DATA_DIR || path.join(APP_DIR, 'runtime-data');
 const DRAWIO_DIR = process.env.DRAWIO_DIR || path.join(APP_DIR, 'drawio');
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
-const SEED_DIAGRAM = path.join(APP_DIR, 'data', 'orbitask_as_is_processes.drawio');
 const TICKETS = JSON.parse(fs.readFileSync(path.join(APP_DIR, 'data', 'tickets.json'), 'utf8'));
+const N = TICKETS.tickets.length;
+
+// Presenter mode (orbitask-presenter image): all tickets visible, reference solutions next to each ticket and a
+// draw.io file that has a TO-BE solution page after every as-is process. The student image has no solution files.
+const PRESENTER = process.env.PRESENTER === '1';
+const PRESENTER_DIR = process.env.PRESENTER_DIR || path.join(APP_DIR, 'presenter');
+const SOLUTIONS = PRESENTER
+  ? JSON.parse(fs.readFileSync(path.join(PRESENTER_DIR, 'solutions.json'), 'utf8')).solutions : null;
+const SEED_DIAGRAM = PRESENTER
+  ? path.join(PRESENTER_DIR, 'orbitask_reference_solutions.drawio')
+  : path.join(APP_DIR, 'data', 'orbitask_as_is_processes.drawio');
 const PRECONFIG = fs.readFileSync(path.join(APP_DIR, 'drawio-config', 'PreConfig.js'), 'utf8');
 
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
@@ -39,7 +49,17 @@ function writeAtomic(file, data) {
 function pickTicket() {
   const forced = parseInt(process.env.PROBLEM || '', 10);
   if (forced >= 1 && forced <= TICKETS.tickets.length) return forced;
-  return crypto.randomInt(1, TICKETS.tickets.length + 1);
+  return crypto.randomInt(1, N + 1);
+}
+
+// "Finished early?" -> the next problem to the right: assigned + 1, wrapping 7 -> 1, skipping ones already active.
+const nextNumber = n => (n % N) + 1;
+function nextExtra() {
+  const active = activeNumbers();
+  if (active.length >= N) return null;
+  let n = nextNumber(active[active.length - 1]);
+  while (active.includes(n)) n = nextNumber(n);
+  return n;
 }
 
 function loadState() {
@@ -49,14 +69,20 @@ function loadState() {
     try { state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); } catch (e) { state = null; }
   }
   if (!state || !state.ticket) {
-    state = { ticket: pickTicket(), team: '', createdAt: new Date().toISOString(), replies: [],
-              chatSeen: false, savedAt: null };
+    state = { ticket: pickTicket(), extra: [], team: '', createdAt: new Date().toISOString(), replies: [],
+              seen: {}, savedAt: null };
     writeAtomic(STATE_FILE, JSON.stringify(state, null, 1));
   }
+  // Older state files (single ticket): migrate.
+  if (!Array.isArray(state.extra)) state.extra = [];
+  if (!state.seen) state.seen = state.chatSeen ? { [state.ticket]: true } : {};
+  delete state.chatSeen;
+  state.replies.forEach(r => { if (!r.ticket) r.ticket = state.ticket; });
   // An explicit PROBLEM always wins (lets the teacher reassign a group).
   const forced = parseInt(process.env.PROBLEM || '', 10);
   if (forced >= 1 && forced <= TICKETS.tickets.length && state.ticket !== forced) {
     state.ticket = forced;
+    state.extra = state.extra.filter(n => n !== forced);
     writeAtomic(STATE_FILE, JSON.stringify(state, null, 1));
   }
   if (!fs.existsSync(WORK_FILE)) fs.copyFileSync(SEED_DIAGRAM, WORK_FILE);
@@ -65,7 +91,18 @@ function loadState() {
 
 let state = loadState();
 const saveState = () => writeAtomic(STATE_FILE, JSON.stringify(state, null, 1));
-const ticket = () => TICKETS.tickets[state.ticket - 1];
+const ticketByNo = n => TICKETS.tickets[n - 1];
+const ticket = () => ticketByNo(state.ticket);
+function activeNumbers() {
+  if (PRESENTER) return TICKETS.tickets.map(t => t.number);
+  return [state.ticket].concat(state.extra);
+}
+function ticketForClient(n) {
+  const t = Object.assign({}, ticketByNo(n), { extra: !PRESENTER && n !== state.ticket });
+  if (SOLUTIONS) t.solution = SOLUTIONS[String(n)] || null;
+  return t;
+}
+const validTicket = n => activeNumbers().includes(n);
 
 let lastBackup = 0;
 function backupWork() {
@@ -114,26 +151,37 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
   .replace(/"/g, '&quot;');
 const slug = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 
-// Builds the hand-in file: the students' diagram plus an extra page with the request and their replies.
+// Hand-in tickets: everything the group was given (in presenter mode: only tickets with a reply).
+function handInNumbers() {
+  if (!PRESENTER) return activeNumbers();
+  const withReplies = activeNumbers().filter(n => state.replies.some(r => r.ticket === n));
+  return withReplies.length ? withReplies : [state.ticket];
+}
+
+// Builds the hand-in file: the students' diagram plus one extra page per request with their replies.
 function buildHandIn() {
-  const t = ticket();
   const xml = fs.readFileSync(WORK_FILE, 'utf8');
-  const replies = state.replies.length
-    ? state.replies.map(r => `<li><b>${esc(new Date(r.at).toLocaleString('en-GB'))}</b><br>${esc(r.text)
-        .replace(/\n/g, '<br>')}</li>`).join('')
-    : '<li><i>No written reply was sent.</i></li>';
-  const html = `<h2>Hand-in – ${esc(t.id)}: ${esc(t.title)}</h2>`
-    + `<p><b>Team:</b> ${esc(state.team || '(not filled in)')}<br><b>Requester:</b> ${esc(t.from_name)}, `
-    + `${esc(t.from_role)}<br><b>Process:</b> ${esc(t.process)}<br><b>Scope:</b> ${esc(t.scope)}</p>`
-    + `<h3>Our written proposal (chat replies)</h3><ul>${replies}</ul>`;
-  const page = `<diagram id="handin" name="Hand-in – ${esc(t.id)}"><mxGraphModel dx="1000" dy="800" grid="1" `
-    + `gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" math="0" `
-    + `shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="handin-text" value="${esc(html)}" `
-    + `style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=12;fillColor=#FFFDF2;`
-    + `strokeColor=#999999;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="760" height="600" `
-    + `as="geometry"/></mxCell></root></mxGraphModel></diagram>`;
-  const cleaned = xml.replace(/<diagram id="handin"[\s\S]*?<\/diagram>/g, '');
-  return cleaned.replace(/<\/mxfile>\s*$/, page + '</mxfile>');
+  const pages = handInNumbers().map((n, i) => {
+    const t = ticketByNo(n);
+    const mine = state.replies.filter(r => r.ticket === n);
+    const replies = mine.length
+      ? mine.map(r => `<li><b>${esc(new Date(r.at).toLocaleString('en-GB'))}</b><br>${esc(r.text)
+          .replace(/\n/g, '<br>')}</li>`).join('')
+      : '<li><i>No written reply was sent.</i></li>';
+    const html = `<h2>Hand-in – ${esc(t.id)}: ${esc(t.title)}</h2>`
+      + `<p><b>Team:</b> ${esc(state.team || '(not filled in)')}<br><b>Request:</b> `
+      + `${i === 0 ? 'assigned request' : 'extra request ' + i + ' (finished early)'}<br><b>Requester:</b> `
+      + `${esc(t.from_name)}, ${esc(t.from_role)}<br><b>Process:</b> ${esc(t.process)}<br><b>Scope:</b> `
+      + `${esc(t.scope)}</p><h3>Our written proposal (chat replies)</h3><ul>${replies}</ul>`;
+    return `<diagram id="handin-${n}" name="Hand-in – ${esc(t.id)}"><mxGraphModel dx="1000" dy="800" grid="1" `
+      + `gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" math="0" `
+      + `shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="handin-text-${n}" `
+      + `value="${esc(html)}" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=12;`
+      + `fillColor=#FFFDF2;strokeColor=#999999;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="760" `
+      + `height="600" as="geometry"/></mxCell></root></mxGraphModel></diagram>`;
+  }).join('');
+  const cleaned = xml.replace(/<diagram id="handin[^"]*"[\s\S]*?<\/diagram>/g, '');
+  return cleaned.replace(/<\/mxfile>\s*$/, pages + '</mxfile>');
 }
 
 // ---------------------------------------------------------------- routes
@@ -142,9 +190,21 @@ async function handle(req, res) {
   const p = decodeURIComponent(url.pathname);
 
   if (p === '/api/session' && req.method === 'GET') {
-    const t = ticket();
-    return json(res, 200, { ticket: t, guide: TICKETS.guide, team: state.team, replies: state.replies,
-                            chatSeen: state.chatSeen, savedAt: state.savedAt, createdAt: state.createdAt });
+    const next = PRESENTER ? null : nextExtra();
+    return json(res, 200, { presenter: PRESENTER, primary: state.ticket, tickets: activeNumbers().map(ticketForClient),
+                            next: next && { number: next, process: ticketByNo(next).process },
+                            guide: TICKETS.guide, team: state.team, replies: state.replies, seen: state.seen,
+                            savedAt: state.savedAt, createdAt: state.createdAt });
+  }
+  if (p === '/api/extra' && req.method === 'POST') {
+    if (PRESENTER) return json(res, 400, { error: 'not in presenter mode' });
+    const n = nextExtra();
+    if (!n) return json(res, 400, { error: 'no more requests' });
+    state.extra.push(n); saveState();
+    console.log(`Extra request for team "${state.team}": #${n} ${ticketByNo(n).id} – ${ticketByNo(n).process}`);
+    const next = nextExtra();
+    return json(res, 200, { ticket: ticketForClient(n),
+                            next: next && { number: next, process: ticketByNo(next).process } });
   }
   if (p === '/api/team' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req) || '{}');
@@ -152,13 +212,18 @@ async function handle(req, res) {
     return json(res, 200, { ok: true, team: state.team });
   }
   if (p === '/api/seen' && req.method === 'POST') {
-    state.chatSeen = true; saveState(); return json(res, 200, { ok: true });
+    const body = JSON.parse(await readBody(req) || '{}');
+    const n = parseInt(body.ticket, 10);
+    if (!validTicket(n)) return json(res, 400, { error: 'unknown ticket' });
+    state.seen[n] = true; saveState(); return json(res, 200, { ok: true });
   }
   if (p === '/api/reply' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req) || '{}');
     const text = String(body.text || '').trim().slice(0, 8000);
+    const n = parseInt(body.ticket, 10);
     if (!text) return json(res, 400, { error: 'empty' });
-    state.replies.push({ at: new Date().toISOString(), text }); saveState();
+    if (!validTicket(n)) return json(res, 400, { error: 'unknown ticket' });
+    state.replies.push({ at: new Date().toISOString(), ticket: n, text }); saveState();
     return json(res, 200, { ok: true, replies: state.replies });
   }
   if (p === '/api/diagram' && req.method === 'GET') {
@@ -179,8 +244,8 @@ async function handle(req, res) {
     return json(res, 200, { ok: true });
   }
   if (p === '/api/handin' && req.method === 'GET') {
-    const t = ticket();
-    const name = `orbitask_${t.id}_${slug(state.team) || 'team'}.drawio`;
+    const ids = handInNumbers().map(n => ticketByNo(n).id).join('+');
+    const name = `orbitask_${ids}_${slug(state.team) || 'team'}.drawio`;
     return send(res, 200, buildHandIn(), { 'Content-Type': MIME['.drawio'],
                                           'Content-Disposition': `attachment; filename="${name}"` });
   }
@@ -200,5 +265,7 @@ http.createServer((req, res) => {
 }).listen(PORT, () => {
   const t = ticket();
   console.log(`Orbitask workshop running on http://localhost:${PORT}`);
-  console.log(`Assigned problem: #${state.ticket} ${t.id} – ${t.process} (data in ${DATA_DIR})`);
+  if (PRESENTER) console.log(`PRESENTER mode: all ${N} requests + reference solutions (data in ${DATA_DIR})`);
+  else console.log(`Assigned problem: #${state.ticket} ${t.id} – ${t.process} (data in ${DATA_DIR})`);
+  state.extra.forEach(n => console.log(`Extra request: #${n} ${ticketByNo(n).id} – ${ticketByNo(n).process}`));
 });
