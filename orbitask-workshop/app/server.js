@@ -18,6 +18,21 @@ const N = TICKETS.tickets.length;
 // draw.io file that has a TO-BE solution page after every as-is process. The student image has no solution files.
 const PRESENTER = process.env.PRESENTER === '1';
 const PRESENTER_DIR = process.env.PRESENTER_DIR || path.join(APP_DIR, 'presenter');
+// The presenter app is password-protected (HTTP Basic auth, any user name). The password is never stored in the
+// repo: it comes from the PRESENTER_PASSWORD environment variable (see orbitask-presenter/.env).
+const PRESENTER_PASSWORD = process.env.PRESENTER_PASSWORD || '';
+if (PRESENTER && !PRESENTER_PASSWORD) {
+  console.error('PRESENTER_PASSWORD is not set – refusing to serve the solutions without a password.');
+  process.exit(1);
+}
+function authorized(req) {
+  const m = /^Basic\s+(.+)$/i.exec(req.headers.authorization || '');
+  if (!m) return false;
+  const decoded = Buffer.from(m[1], 'base64').toString('utf8');
+  const given = crypto.createHash('sha256').update(decoded.slice(decoded.indexOf(':') + 1)).digest();
+  const wanted = crypto.createHash('sha256').update(PRESENTER_PASSWORD).digest();
+  return crypto.timingSafeEqual(given, wanted);
+}
 const SOLUTIONS = PRESENTER
   ? JSON.parse(fs.readFileSync(path.join(PRESENTER_DIR, 'solutions.json'), 'utf8')).solutions : null;
 const SEED_DIAGRAM = PRESENTER
@@ -188,6 +203,10 @@ function buildHandIn() {
 async function handle(req, res) {
   const url = new URL(req.url, 'http://localhost');
   const p = decodeURIComponent(url.pathname);
+  if (PRESENTER && p !== '/healthz' && !authorized(req)) {
+    return send(res, 401, 'Presenter area – password required.',
+                { 'WWW-Authenticate': 'Basic realm="Orbitask presenter", charset="UTF-8"', 'Content-Type': 'text/plain' });
+  }
 
   if (p === '/api/session' && req.method === 'GET') {
     const next = PRESENTER ? null : nextExtra();

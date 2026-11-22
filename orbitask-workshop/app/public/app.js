@@ -46,9 +46,46 @@
     if (name === 'editor') ensureEditor();
     if (name === 'activity') renderActivity();
     if (name === 'solutions') renderSolutions();
+    syncRoute();
   }
 
-  document.querySelectorAll('.rail-btn').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+  // ------------------------------------------------------------ links (#/chat/ORB-1090, #/editor/ORB-1090/to-be, …)
+  // Every view has its own URL, so a page refresh (or a bookmark / the back button) lands on the same place.
+  let applyingRoute = false;
+  const byId = id => TICKETS.find(t => t.id.toLowerCase() === String(id || '').toLowerCase());
+  const byPage = pageId => TICKETS.find(t => t.page_id === String(pageId).replace(/-tobe$/, ''));
+  const isToBe = pageId => /-tobe$/.test(pageId || '');
+
+  function routeFor() {
+    if (!currentView || currentView === 'welcome' || !T) return '';
+    if (currentView === 'chat') return '#/chat/' + (currentChat === 'guide' ? 'guide' : T.id);
+    if (currentView === 'editor') return '#/editor/' + T.id + (PRESENTER() && isToBe(editorPage) ? '/to-be' : '');
+    return '#/' + currentView;
+  }
+
+  function syncRoute(replace) {
+    if (applyingRoute) return;
+    const r = routeFor();
+    if (!r || location.hash === r) return;
+    if (replace || !location.hash) history.replaceState(null, '', r); else history.pushState(null, '', r);
+  }
+
+  // Opens the view named in the URL. Returns false if the URL names nothing (-> caller shows the default view).
+  function applyRoute() {
+    const [view, id, sub] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
+    const t = byId(id);
+    applyingRoute = true;
+    try {
+      if (view === 'chat') openChat(id === 'guide' ? 'guide' : (t ? t.number : null));
+      else if (view === 'editor') { if (t) openInEditor(t, PRESENTER() && sub === 'to-be'); else showView('editor'); }
+      else if (view === 'activity' || view === 'guide' || (view === 'solutions' && PRESENTER())) showView(view);
+      else return false;
+    } finally { applyingRoute = false; }
+    syncRoute(true); // normalise, e.g. #/chat -> #/chat/ORB-1090
+    return true;
+  }
+
+  window.addEventListener('hashchange', () => { if (S && S._started) applyRoute(); });
 
   function avatar(name, color, initials) {
     const a = el('span', 'avatar', initials);
@@ -69,13 +106,14 @@
   }
 
   // Switch the "current" ticket (chat header, request panel, editor page).
-  function selectTicket(num) {
+  function selectTicket(num, fromEditor) {
     const t = byNo(num);
     if (!t || t === T) return;
     T = t;
     $('#ticketChip').textContent = `${T.id} · ${T.process}`;
     renderBrief();
-    if (editorReady) goToPage(T.page_id);
+    if (editorReady && !fromEditor) goToPage(T.page_id);
+    if (currentView === 'editor') syncRoute(fromEditor);
   }
 
   // ------------------------------------------------------------ welcome + notification
@@ -154,8 +192,7 @@
       return c;
     }
     c.appendChild(el('b', null, 'Finished early?'));
-    c.appendChild(el('small', null, `Take on the next request: ${S.next.process}. `
-      + 'Hand in still gives you one file with all your requests.'));
+    c.appendChild(el('small', null, `Next up: ${S.next.process}`));
     const btn = el('button', 'ghost', 'Get an extra request');
     btn.onclick = requestExtra;
     c.appendChild(btn);
@@ -165,8 +202,7 @@
   async function requestExtra() {
     if (!S.next) return;
     const ok = await confirmDlg('Take on an extra request?',
-      `You will get the request for "${S.next.process}" (the next process after yours). Keep your current work – `
-      + "make the extra process's to-be on a new page too. 'Hand in' then downloads one file with everything.",
+      `Next request: "${S.next.process}". Model its to-be on a new page in the same file.`,
       'Yes, give us more');
     if (!ok) return;
     const r = await post('/api/extra');
@@ -259,9 +295,9 @@
       t.appendChild(el('small', null, 'orbitask_as_is_processes.drawio'));
       top.appendChild(t);
       card.appendChild(top);
-      const btn = el('button', null, 'Open in the process editor');
-      btn.onclick = () => showView('editor');
-      card.appendChild(btn);
+      const link = el('a', 'pc-open', 'Open in the process editor');
+      link.href = '#/editor/' + encodeURIComponent(T.id);
+      card.appendChild(link);
       b.appendChild(card);
     }
     return b;
@@ -288,6 +324,7 @@
     if (kind !== 'guide') selectTicket(kind);
     renderChatList();
     if (currentView !== 'chat') { showView('chat'); return; }
+    syncRoute();
     convHead(kind);
     const msgs = $('#messages');
     msgs.innerHTML = '';
@@ -299,9 +336,7 @@
       col.appendChild(bubbleFor({ type: 'list', intro: 'How to work:', items: S.guide.tips }));
       col.appendChild(bubbleFor({ type: 'list', intro: 'Rules from Orbitask management:', items: S.guide.constraints }));
       if (!PRESENTER()) {
-        col.appendChild(bubbleFor({ type: 'text', text: 'Finished early? Click "Get an extra request" in the chat '
-          + 'list. You get the next process (the one after yours). Do it in the same file – "Hand in" downloads '
-          + 'one file with both requests and all your replies.' }));
+        col.appendChild(bubbleFor({ type: 'text', text: 'Finished early? Click "Get an extra request" in the chat list.' }));
       }
       return;
     }
@@ -387,8 +422,7 @@
     const ul = el('ul'); S.guide.constraints.forEach(t => ul.appendChild(el('li', null, t))); c2.appendChild(ul); g.appendChild(c2);
     if (!PRESENTER()) {
       const c4 = el('div', 'card'); c4.appendChild(el('h2', null, 'Finished early?'));
-      c4.appendChild(el('p', null, 'Take on a second request: you get the next process after yours (your problem + 1). '
-        + 'Work in the same file – make a new to-be page for it – and reply to that manager in the chat.'));
+      c4.appendChild(el('p', null, 'Get the next process and model its to-be on a new page in the same file.'));
       const extras = TICKETS.filter(t => t.extra);
       if (extras.length) c4.appendChild(el('p', null, 'Extra requests you have: ' + extras.map(t => `${t.id} (${t.process})`).join(', ')));
       if (S.next) {
@@ -428,8 +462,8 @@
   }
 
   function openInEditor(t, tobe) {
-    selectTicket(t.number);
-    pendingPage = tobe ? t.page_id + '-tobe' : t.page_id;
+    selectTicket(t.number, true);
+    pendingPage = editorPage = tobe ? t.page_id + '-tobe' : t.page_id;
     showView('editor');
     if (editorReady) { goToPage(pendingPage); pendingPage = null; }
   }
@@ -456,6 +490,7 @@
 
   // ------------------------------------------------------------ editor (draw.io embed)
   let frame = null, editorReady = false, pendingXml = null, saving = false, saveTimer = null, pendingPage = null;
+  let editorPage = null; // draw.io page shown in the editor (part of the URL in presenter mode: …/to-be)
 
   function renderBrief() {
     const b = $('#brief');
@@ -502,6 +537,7 @@
       libraries: '1', libs: 'general;bpmn2', ui: 'kennedy', stealth: '1', pwa: '0', lang: 'en',
       'page-id': pendingPage || T.page_id,
     });
+    editorPage = pendingPage || T.page_id;
     pendingPage = null;
     frame = document.createElement('iframe');
     frame.title = 'draw.io process editor';
@@ -531,19 +567,59 @@
       if (ui.isShapesPanelVisible && !ui.isShapesPanelVisible()) ui.toggleShapesPanel(true);
       if (ui.isFormatPanelVisible && !ui.isFormatPanelVisible()) ui.toggleFormatPanel(true);
       panelsOpened = true;
-      setTimeout(() => { try { ui.actions.get('fitWindow').funct(); } catch (e) { /* ignore */ } }, 300);
+      setTimeout(() => fitPage(ui), 300);
+    } catch (e) { /* not critical */ }
+  }
+
+  // Zoom so the whole process is visible. If the canvas is too narrow for that (small screen, panels open), a fit
+  // would zoom out so far that the page looks empty – then show it at a readable zoom from the top-left instead.
+  function fitPage(ui) {
+    try {
+      ui.actions.get('fitWindow').funct();
+      if (ui.editor.graph.view.scale < 0.2) ui.actions.get('resetView').funct();
+    } catch (e) { /* ignore */ }
+  }
+
+  // Follow page changes made inside draw.io (page tabs at the bottom): the request panel and the URL go along.
+  function watchPages() {
+    try {
+      const ui = frame.contentWindow.__orbitaskUi;
+      if (!ui || ui.__orbitaskPages) return;
+      ui.__orbitaskPages = true;
+      ui.editor.addListener('pageSelected', () => {
+        editorPage = ui.currentPage && ui.currentPage.getId();
+        const t = byPage(editorPage);
+        if (t && t !== T) selectTicket(t.number, true);
+        else if (currentView === 'editor') syncRoute(true);
+        checkPage(ui);
+      });
+    } catch (e) { /* not critical */ }
+  }
+
+  // Warn if the request's page is missing or empty in the saved file (e.g. deleted by accident).
+  function checkPage(ui) {
+    try {
+      const want = editorPage || T.page_id;
+      const page = ui.pages && ui.pages.find(p => p.getId() === want);
+      const empty = page && page === ui.currentPage && Object.keys(ui.editor.graph.model.cells).length <= 2;
+      if (!page || empty) {
+        setStatus(`The page for ${T.process.split(' ')[0]} is ${page ? 'empty' : 'missing'} in your file – `
+          + "use 'Restore original' to get it back.", 'err');
+      }
     } catch (e) { /* not critical */ }
   }
 
   // Jump to a page of the open diagram (used when switching between requests / showing a solution page).
   function goToPage(pageId) {
+    editorPage = pageId;
     try {
       const ui = frame.contentWindow.__orbitaskUi;
       if (!ui || !ui.pages) return;
       const page = ui.pages.find(p => p.getId() === pageId);
-      if (!page || page === ui.currentPage) return;
+      if (!page) { checkPage(ui); return; }
+      if (page === ui.currentPage) return;
       ui.selectPage(page);
-      setTimeout(() => { try { ui.actions.get('fitWindow').funct(); } catch (e) { /* ignore */ } }, 200);
+      setTimeout(() => fitPage(ui), 200);
     } catch (e) { /* not critical */ }
   }
 
@@ -563,8 +639,10 @@
       editorReady = true;
       const l = document.querySelector('.frame-loading'); if (l) l.remove();
       openPanels();
-      if (pendingPage) { goToPage(pendingPage); pendingPage = null; }
+      watchPages();
+      goToPage(pendingPage || editorPage || T.page_id); pendingPage = null;
       setStatus(S.savedAt ? 'All changes saved · ' + hhmm(S.savedAt) : 'Ready – changes are saved automatically', 'ok');
+      checkPage(frame.contentWindow.__orbitaskUi);
     } else if (msg.event === 'autosave' || msg.event === 'save') {
       if (msg.xml) queueSave(msg.xml, msg.event === 'save' ? 0 : 1000);
     }
@@ -658,10 +736,11 @@
     // Requests delivered earlier but never opened stay unread after a reload.
     TICKETS.forEach(t => { if (!isSeen(t.number) && t.extra) unread.add(t.number); });
     updateBadges();
-    if (PRESENTER()) { S._started = true; showView('solutions'); return; }
+    if (PRESENTER()) { S._started = true; if (!applyRoute()) showView('solutions'); return; }
     if (!S.team && !isSeen(S.primary)) { showView('welcome'); $('#teamInput').focus(); return; }
     S._started = true;
     if (!isSeen(S.primary)) { showView('activity'); await sleep(1200); deliverNotification(byNo(S.primary)); return; }
+    if (applyRoute()) return;
     currentChat = S.primary;
     showView('chat');
   }

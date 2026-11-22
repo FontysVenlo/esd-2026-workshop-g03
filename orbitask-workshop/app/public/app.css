@@ -32,7 +32,7 @@ button { font: inherit; cursor: pointer; }
 
 /* rail */
 .rail { background: #EBEBF0; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding-top: 6px; gap: 2px; }
-.rail-btn { position: relative; width: 60px; height: 56px; border: 0; background: none; color: #4B4B57; border-radius: 6px;
+.rail-btn { position: relative; width: 60px; height: 56px; border: 0; background: none; color: #4B4B57; border-radius: 6px; text-decoration: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; }
 .rail-btn:hover { background: #E0E0E8; color: var(--brand-dark); }
 .rail-btn.active { color: var(--brand); }
@@ -100,8 +100,8 @@ main { position: relative; overflow: hidden; }
 .pc-icon { width: 36px; height: 36px; border-radius: 6px; background: #FFF3E0; color: #C2410C; display: flex; align-items: center; justify-content: center; }
 .process-card .pc-top b { display: block; }
 .process-card .pc-top small { color: var(--muted); }
-.process-card button { width: 100%; border: 0; border-top: 1px solid #ECECF1; background: var(--brand-soft); color: var(--brand-dark); padding: 8px; font-weight: 600; }
-.process-card button:hover { background: #E1E4FF; }
+.process-card .pc-open { display: block; text-align: center; text-decoration: none; border-top: 1px solid #ECECF1; background: var(--brand-soft); color: var(--brand-dark); padding: 8px; font-weight: 600; }
+.process-card .pc-open:hover { background: #E1E4FF; }
 .typing { display: flex; gap: 4px; padding: 12px 14px; }
 .typing i { width: 6px; height: 6px; border-radius: 50%; background: #9CA3AF; animation: blink 1.2s infinite; }
 .typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }

@@ -99,15 +99,17 @@ SAP's Best Practice processes are themselves published as BPMN flow diagrams in 
 
 The communication gap BPMN addresses is small in a pizzeria and large in an enterprise. Three things make the difference:
 
-- **Many systems.** Organisations now use on average about 50 endpoints (systems, APIs, bots, people) to execute process tasks, 19% more than five years earlier [19]. 51% of respondents see more complexity because processes span multiple systems, up from 45% in 2023, and 39% say legacy systems are hard to connect [18].
+- **Many systems.** Organisations now use on average about 50 endpoints (systems, APIs, bots, people) to execute process tasks, 19% more than five years earlier [19]. 51% of respondents see more complexity because processes span multiple systems, up from 45% in 2023, and 39% say legacy systems are hard to connect [18]. In the 2026 survey, 76% say the number and variety of endpoints in each process is growing exponentially [23].
 - **Many stakeholders.** 58% see a disconnect between IT decision-makers and business leaders around their processes [18]. In the Orbitask case a single customer touches sales, customer success, finance, support and development.
-- **High complexity.** 82% of large organisations fear “digital chaos” from increasingly complex, interconnected and automated processes [19]; 56% have a lot of automation in place but no good way to control it all [18].
+- **High complexity.** 82% of large organisations fear “digital chaos” from increasingly complex, interconnected and automated processes [19]; 56% have a lot of automation in place but no good way to control it all [18]. In 2026, 85% say they need better tools to manage the points where processes intersect [23].
 
-Side note: despite increased investment, the share of automated organisational processes went *down* from 52% (2023) to 50% (2024) [18]. Automating without a shared understanding of the process does not pay off by itself.
+Side note: despite increased investment, the share of automated organisational processes went *down* from 52% (2023) to 50% (2024) [18]. The 2026 edition reports 48%, with 79% planning to spend more on automation [23]; that survey only covers organisations with 1,000+ employees, so it is not exactly the same population. Automating without a shared understanding of the process does not pay off by itself.
+
+The Standish Group's CHAOS 2020 report puts the share of IT projects that finish on time, on budget and with full scope at 31%, with 50% challenged and 19% failed [25]. Summaries of the report say small projects succeed far more often than large ones. The full report is paywalled; these figures come from widely cited summaries, and Standish's method has been criticised, so the deck uses it as a signal (slide 5, reference [32] there).
 
 ## 10. Notation subset needed for the exercises
 
-Real-world models use a small part of BPMN: in a study of 120 models the average model used about 9 distinct constructs, and fewer than 20% of the vocabulary was used regularly [22]. The Orbitask as-is models use a similarly small subset, so the notation walkthrough (slides 12–24) focuses on these:
+Real-world models use a small part of BPMN: in a study of 120 models the average model used about 9 distinct constructs, and fewer than 20% of the vocabulary was used regularly [22]. That study used BPMN 1.0; a 2021 study of 25,590 BPMN 2.0 models from six public repositories found the same: 8 to 9 distinct element types per model out of about 85, with only five elements (sequence flow, none start event, none end event, task, exclusive gateway) present in more than half of the models [24]. The Orbitask as-is models use a similarly small subset, so the notation walkthrough (slides 12–24) focuses on these:
 
 | Group | Elements used in the Orbitask models |
 | --- | --- |
@@ -137,7 +139,7 @@ These were inline comments in `BPMN Workshop Plan.docx`; kept here so they can b
 
 [4] C. Stryker and I. Belcic, “What is Business Process Modeling and Notation (BPMN)?,” IBM Think, 2024. [Online]. Available: https://www.ibm.com/think/topics/bpmn
 
-[5] Camunda Cloud Team, “BPMN and microservices orchestration, Part 1 of 2: Flow languages, engines, and timeless patterns,” Camunda Blog, Aug. 1, 2018. [Online]. Available: https://camunda.com/blog/2018/08/bpmn-for-microservices-orchestration-a-primer-part-1/
+[5] B. Ruecker, “Why process orchestration needs advanced workflow patterns,” Camunda Blog, Jul. 21, 2022. [Online]. Available: https://camunda.com/blog/2022/07/why-process-orchestration-needs-advanced-workflow-patterns
 
 [6] Django Viewflow, “5 lessons that software developers can learn from Business Process Model and Notation (BPMN),” Medium, Mar. 1, 2021. [Online]. Available: https://viewflow.medium.com/5-lessons-that-software-developers-can-learn-from-business-process-model-and-notation-bpmn-ed7500fc3022
 
@@ -172,3 +174,9 @@ These were inline comments in `BPMN Workshop Plan.docx`; kept here so they can b
 [21] IIBA, *A Guide to the Business Analysis Body of Knowledge (BABOK Guide)*, v3. Toronto: IIBA, 2015, §10.35 Process Modelling.
 
 [22] M. zur Muehlen and J. Recker, “How much language is enough? Theoretical and practical use of the Business Process Modeling Notation,” in *Proc. CAiSE 2008*, LNCS 5074. Berlin: Springer, 2008, pp. 465–479. doi: 10.1007/978-3-540-69534-9_35
+
+[23] Camunda, “Three quarters of organizations admit gap between agentic AI vision and reality” (State of Agentic Orchestration & Automation 2026; 1,150 respondents at organisations with 1,000+ employees, fielded Sep. 23–Oct. 23, 2025), press release, Jan. 14, 2026. [Online]. Available: https://camunda.com/press_release/three-quarters-of-organizations-admit-gap-between-agentic-ai-vision-and-reality/
+
+[24] I. Compagnucci, F. Corradini, F. Fornari and B. Re, “Trends on the usage of BPMN 2.0 from publicly available repositories,” in *Proc. BIR 2021*, LNBIP 430. Cham: Springer, 2021, pp. 84–99. doi: 10.1007/978-3-030-87205-2_6
+
+[25] Standish Group (J. Johnson), *CHAOS 2020: Beyond Infinity*. Boston, MA, USA: The Standish Group, 2020. Figures as summarised in: OpenCommons, “CHAOS Report on IT Project Outcomes,” 2025. [Online]. Available: https://opencommons.org/CHAOS_Report_on_IT_Project_Outcomes

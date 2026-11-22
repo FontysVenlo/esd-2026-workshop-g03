@@ -14,15 +14,15 @@ Give them 2 minutes in pairs, then collect 3 or 4 answers on the whiteboard. You
 
 ### Slide 3: One process, three versions
 
-Same process, three versions: the analyst's Word document, the developer's code, and what's in the employee's head. Every handoff between them is a translation, and things get lost. Camunda surveyed 866 people working on automation at companies with 250+ employees: 58% see a disconnect between IT and business leaders about their processes [4]. Side note from the same survey: the share of automated processes went down from 52% to 50% even though companies spent more. Automating a process nobody really understands doesn't pay off. This gap is literally what BPMN was made for; the spec says so in its first paragraph [1]. Ask: has anyone seen this in a side job or project? Customer says one thing, the code does another.
+Same process, three versions: the analyst's Word document, the developer's code, and what's in the employee's head. Every handoff between them is a translation, and things get lost. Camunda surveyed 866 people working on automation at companies with 250+ employees: 58% see a disconnect between IT and business leaders about their processes [4]. Side note: the share of automated processes went from 52% to 50% in that survey, and the 2026 edition (1,150 people, only companies with 1,000+ employees, so not exactly the same group) reports 48% [4c], even though budgets keep going up. Automating a process nobody really understands doesn't pay off. This gap is literally what BPMN was made for; the spec says so in its first paragraph [1]. Ask: has anyone seen this in a side job or project? Customer says one thing, the code does another.
 
 ### Slide 4: An enterprise problem
 
-Make clear this is mainly an enterprise problem. In a pizzeria the owner knows everything. In a big company three things make it hard. Systems: organisations use about 50 endpoints (systems, APIs, bots, people) to run their processes, 19% more than five years ago [4b], and 51% say processes across several systems make things harder [4]. People: one customer touches sales, customer success, finance, support and development, and each only sees their own part [6]. Complexity: 82% of large organisations worry about 'digital chaos' [4b], and 56% have lots of automation but no good way to manage it [4]. That's also why the exercises go from small to big: pizzeria first, then Orbitask with 120 people and 10 linked processes. Ask: how many different tools do you think a company of 120 people uses? (Orbitask alone: email, Excel, Word, Teams, an admin console, an accounting tool, Jira, GitHub, an HR tool.)
+Make clear this is mainly an enterprise problem. In a pizzeria the owner knows everything. In a big company three things make it hard. Systems: organisations use about 50 endpoints (systems, APIs, bots, people) to run their processes, 19% more than five years ago [4b], and in 2026 76% say the number and variety of endpoints per process is growing exponentially [4c]. People: one customer touches sales, customer success, finance, support and development, and each only sees their own part [6]. Complexity: 82% of large organisations worry about 'digital chaos' [4b], and 85% say they need better tools to manage where processes meet [4c]. That's also why the exercises go from small to big: pizzeria first, then Orbitask with 120 people and 10 linked processes. Ask: how many different tools do you think a company of 120 people uses? (Orbitask alone: email, Excel, Word, Teams, an admin console, an accounting tool, Jira, GitHub, an HR tool.)
 
 ### Slide 5: What is BPMN?
 
-BPMN = Business Process Model and Notation. A standard way to draw what happens, in what order, who does it, and where decisions or parallel work happen [1], [6]. Short history: BPMI published 1.0 in 2004 and joined the OMG in 2005 [3]. BPMN 2.0 (2011) added execution rules and an XML format, which is why tools can exchange and even run models [2a]. ISO standard since 2013 [2], current version 2.0.2 from 2014 [1]. Why a standard matters: before that, every consultancy and tool had its own shapes, so diagrams couldn't be shared or compared.
+BPMN = Business Process Model and Notation. A standard way to draw what happens, in what order, who does it, and where decisions or parallel work happen [1], [6]. Short history: BPMI published 1.0 in 2004 and joined the OMG in 2005 [3]. BPMN 2.0 (2011) added execution rules and an XML format, which is why tools can exchange and even run models [2a]. ISO standard since 2013 [2], current version 2.0.2 from 2014 [1]. Then the CHAOS card: the Standish Group's CHAOS 2020 report says only 31% of IT projects finish on time, on budget and with the full scope; 50% are challenged and 19% fail [32]. Summaries of the same report say small projects succeed far more often than large ones, which is the enterprise problem again. Unclear requirements and too little user involvement have been on Standish's list of causes since the first report, and that's the gap a shared model closes. (If someone asks: Standish's method is debated and the full report is paywalled, so use it as a signal, not an exact number.) Why a standard matters: before that, every consultancy and tool had its own shapes, so diagrams couldn't be shared or compared.
 
 ### Slide 6: Three uses of a model
 
@@ -46,7 +46,7 @@ Pros: open ISO standard with an XML format, so you're not locked into one tool [
 
 ### Slide 11: A small subset is enough
 
-zur Muehlen and Recker looked at 120 real BPMN models [5]. On average a model used about 9 different symbols, and less than 20% of BPMN's symbols were used regularly. Some never showed up at all. So we don't teach the whole spec. Hand over to Jonathan: he goes through the symbols that actually appear in the Orbitask models, using the handout.
+zur Muehlen and Recker looked at 120 real BPMN models [5]. On average a model used about 9 different symbols, and less than 20% of BPMN's symbols were used regularly. Some never showed up at all. That was BPMN 1.0, but a 2021 study of 25,590 BPMN 2.0 models from public repositories found the same: 8 to 9 different element types per model out of about 85, and only five elements (sequence flow, start, end, task, XOR gateway) appear in more than half of all models [5b]. So we don't teach the whole spec. Hand over to Jonathan: he goes through the symbols that actually appear in the Orbitask models, using the handout.
 
 ## Part 1b: notation and tools (Jonathan)
 
@@ -144,7 +144,7 @@ Reference list for the notation and tools part. [1] is the same OMG spec as in t
 
 - [1] Object Management Group, Business Process Model and Notation (BPMN) v2.0.2, Jan. 2014. omg.org/spec/BPMN
 - [17] ARIS (Software GmbH), “ARIS BPMN” cheat sheet, 2024 (cheat-sheet.pdf in this repo).
-- [18] M. Weske, Business Process Management: Concepts, Languages, Architectures, 2nd ed. Springer, 2012, ch. 5; Fontys BUPR-BPM ch. 5 slides, 2025.
+- [18] M. Weske, Business Process Management: Concepts, Languages, Architectures, 4th ed. Springer, 2024, ch. “Process Choreographies”; Fontys BUPR-BPM ch. 5 slides, 2025.
 - [20] JGraph, draw.io source repository, Apache License 2.0. github.com/jgraph/drawio
 - [21] Docker Hub, “jgraph/drawio” image. hub.docker.com/r/jgraph/drawio
 - [22] bpmn.io forum, “Converting draw.io flows to bpmn.io flows en masse,” Feb. 2025. forum.bpmn.io
@@ -166,15 +166,18 @@ Reference list for the notation and tools part. [1] is the same OMG spec as in t
 - [3] Trisotech, “BPMN introduction and history.” trisotech.com/bpmn-introduction-and-history
 - [4] Camunda, “Camunda survey shows automation growth remains flat despite increased investment” (State of Process Orchestration 2024; n = 866), press release, 16 Jan. 2024.
 - [4b] Camunda, “8 in 10 organizations fear digital chaos as business process complexity increases” (State of Process Orchestration & Automation 2025; n = 800), press release, 22 Jan. 2025.
+- [4c] Camunda, “Three quarters of organizations admit gap between agentic AI vision and reality” (State of Agentic Orchestration & Automation 2026; n = 1,150, 1,000+ employees), press release, 14 Jan. 2026.
 - [5] M. zur Muehlen, J. Recker, “How much language is enough? Theoretical and practical use of BPMN,” CAiSE 2008, LNCS 5074, pp. 465–479. doi:10.1007/978-3-540-69534-9_35
+- [5b] I. Compagnucci, F. Corradini, F. Fornari, B. Re, “Trends on the usage of BPMN 2.0 from publicly available repositories,” BIR 2021, LNBIP 430, pp. 84–99. doi:10.1007/978-3-030-87205-2_6
 - [6] M. Dumas, M. La Rosa, J. Mendling, H. A. Reijers, Fundamentals of Business Process Management, 2nd ed. Springer, 2018. doi:10.1007/978-3-662-56509-4
 - [7] IIBA, A Guide to the Business Analysis Body of Knowledge (BABOK Guide) v3, 2015, §10.35 Process Modelling.
 - [8] SAP Community, “Using SAP Best Practices packages with SAP Signavio,” 2022. community.sap.com
 - [9] Camunda, “How Zalando orchestrates its sales order process with Camunda,” Jul. 2021. camunda.com/blog
-- [10] Camunda, “BPMN and microservices orchestration, part 1: flow languages, engines, and timeless patterns,” Aug. 2018. camunda.com/blog
+- [10] B. Ruecker, “Why process orchestration needs advanced workflow patterns,” Camunda blog, Jul. 2022. camunda.com/blog
 - [11] C. Green, “Alternatives to Business Process Modelling Notation (BPMN),” Netcall, Jan. 2024. netcall.com/blog
 - [12] Visual Paradigm Guides, “A comparative analysis of activity diagrams and BPMN in UML.” guides.visual-paradigm.com
 - [13] Y. Kologryvov, “What’s wrong with BPMN?,” Medium. medium.com/@yaroslavkologryvov
 - [14] W. M. P. van der Aalst, “The application of Petri nets to workflow management,” J. Circuits, Systems and Computers 8(1), 1998.
 - [15] A.-W. Scheer, O. Thomas, O. Adam, “Process modeling using event-driven process chains,” in Process-Aware Information Systems, Wiley, 2005.
 - [16] H. Magalhães, “Advantages and disadvantages of choosing BPMN instead of a traditional flowchart,” Helppier, Dec. 2023.
+- [32] Standish Group, J. Johnson, CHAOS 2020: Beyond Infinity. Boston: Standish Group, 2020 (31% successful, 50% challenged, 19% failed).

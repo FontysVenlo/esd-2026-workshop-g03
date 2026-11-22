@@ -25,9 +25,9 @@ After the walkthrough:
 - **Read one together**: a support-ticket process, simplified from the Orbitask process P6 "Customer support". This replaces the ARIS "applicant selection" example. Our own note on that slide said it should be an IT process, so that slide is hidden now.
 - **Quick check**: four questions (solid vs. dashed arrow, X vs. +, timer start, pool vs. lane).
 - **As-is vs. to-be**: the IT account request example. The process stays the same, but the email becomes a form and account creation is automated. This is the step students take in the Orbitask challenge.
-- **Choreographies**: background only. One process = one pool; a choreography models only the messages between participants (OMG BPMN 2.0.2 ch. 11 [1]; Weske ch. 5 [18], which we had in BUPR).
+- **Choreographies**: background only. One process = one pool; a choreography models only the messages between participants (OMG BPMN 2.0.2 ch. 11 [1]; Weske, chapter on process choreographies [18], which we had in BUPR).
 
-Why only part of the notation: real-world models use few symbols. In a study of 120 models the average model used about 9 different ones (zur Muehlen & Recker 2008, reference [22] in [research-notes.md](research-notes.md)).
+Why only part of the notation: real-world models use few symbols. In a study of 120 models the average model used about 9 different ones (zur Muehlen & Recker 2008, reference [22] in [research-notes.md](research-notes.md)). A 2021 study of 25,590 BPMN 2.0 models found the same 8–9 (Compagnucci et al., reference [24] there).
 
 ## Tools
 
@@ -79,7 +79,7 @@ Things to watch out for: the AI only knows what you tell it, the generated layou
 
 [17] ARIS (Software GmbH), "ARIS BPMN" cheat sheet, 2024. `cheat-sheet.pdf` in this repo.
 
-[18] M. Weske, *Business Process Management: Concepts, Languages, Architectures*, 2nd ed. Springer, 2012, ch. 5. Also Fontys BUPR-BPM chapter 5 slides (C. Salz, 2025), `Old Slides/BUPR-BPM-CH05-ProcessChoreographies.pdf`.
+[18] M. Weske, *Business Process Management: Concepts, Languages, Architectures*, 4th ed. Springer, 2024, chapter “Process Choreographies” (ch. 5 in the 2nd ed. used in BUPR). Also Fontys BUPR-BPM chapter 5 slides (C. Salz, 2025), `Old Slides/BUPR-BPM-CH05-ProcessChoreographies.pdf`.
 
 [20] JGraph, draw.io source repository, Apache License 2.0. https://github.com/jgraph/drawio
 
