@@ -33,10 +33,6 @@
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="5" rx="1"/><rect x="14" y="15" width="7" height="5" rx="1"/><path d="M6.5 9v4.5h11V15"/></svg>
     <span>Processes</span>
   </a>
-  <a class="rail-btn" href="#/guide" data-view="guide" title="Workshop guide">
-    <svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M9 8h6M9 12h6"/></svg>
-    <span>Guide</span>
-  </a>
   <a class="rail-btn" href="#/solutions" data-view="solutions" title="Reference solutions (presenter)" id="railSolutions" hidden>
     <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
     <span>Solutions</span>
@@ -49,12 +45,9 @@
     <div class="welcome-card">
       <div class="welcome-logo" aria-hidden="true"></div>
       <h1>Welcome to Orbitask</h1>
-      <p>You just joined Orbitask as a <b>business-process consultant</b>. Managers will contact you here when
-        they need a process improved.</p>
       <label for="teamInput">Your team (names or group name)</label>
       <input id="teamInput" maxlength="120" placeholder="e.g. Group 3 – Lisa, Tom, Amir" autocomplete="off">
       <button id="startBtn" class="primary">Start my first day</button>
-      <p class="hint">Your work is saved automatically inside this container.</p>
     </div>
   </section>
 
@@ -69,10 +62,6 @@
     <aside class="chat-list">
       <div class="pane-title">Chat</div>
       <div id="chatItems"></div>
-      <button class="chat-item" id="chatItemGuide" data-chat="guide">
-        <span class="avatar bot">?</span>
-        <span class="ci-text"><b>Workshop guide</b><small>How to work on your request</small></span>
-      </button>
       <div id="chatExtra"></div>
     </aside>
     <div class="conversation">
@@ -107,11 +96,6 @@
       <aside class="brief" id="brief"></aside>
       <div class="frame-wrap" id="frameWrap"><div class="frame-loading">Loading draw.io…</div></div>
     </div>
-  </section>
-
-  <!-- guide -->
-  <section class="view" id="view-guide" hidden>
-    <div class="guide" id="guide"></div>
   </section>
 
   <!-- solutions (presenter image only) -->

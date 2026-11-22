@@ -427,13 +427,6 @@
    "Orbitask already uses Microsoft 365 (Outlook, Teams, SharePoint, Excel, Forms, Power Automate, Power BI).",
    "New tools may be proposed (CRM, ticketing, billing…) if you can justify them.",
    "Keep a human in the loop where real judgement is needed. Automate the rest."
-  ],
-  "tips": [
-   "Open the editor with the button in the chat or the 'Processes' icon on the left.",
-   "Right-click the page tab of your process (bottom of the editor) → Duplicate, then rename the copy to 'To-be'.",
-   "Mark the problem tasks in red on the as-is page (select → Format panel → Fill).",
-   "BPMN shapes are in the 'BPMN 2.0' libraries in the left panel. To turn a task into a service task: select it → Format panel on the right → 'Property' list → Task Marker → Service.",
-   "Your work is saved automatically inside the container. Use 'Hand in' to download your file at the end."
   ]
  }
 }

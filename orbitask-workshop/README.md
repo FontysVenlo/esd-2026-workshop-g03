@@ -9,62 +9,8 @@ optimising immediately. Everything runs **offline** inside the container and is 
 
 ## For students
 
-You only need **Docker** (Docker Desktop on Windows / macOS).
-
-### 1. Start (first time)
-
-Open a terminal in this folder and run:
-
-```
-docker compose up -d --build
-```
-
-The first start downloads Node.js and draw.io (a few minutes, needs internet). After that it works offline.
-
-<details><summary>Without docker compose</summary>
-
-```
-docker build -t orbitask-workshop .
-docker run -d -p 8080:8080 -v orbitask-data:/data --name orbitask orbitask-workshop
-```
-</details>
-
-### 2. Open
-
-Go to **http://localhost:8080**, enter your team name and click **Start my first day**.
-Wait for the notification, read the manager's message, and click **Open in the process editor**.
-
-### 3. Work
-
-- Your process opens in draw.io. Duplicate the page (right-click the page tab → *Duplicate*) and rename the copy *To-be*.
-- BPMN shapes are in the left panel. To make a task automatic, select it → right panel → *Property* list →
-  *Task Marker* → *Service*.
-- The **Request** button shows the manager's request next to the editor at any time.
-- Write your proposal (tools, expected gain) as a **reply in the chat**.
-- Everything is saved automatically ("All changes saved" at the top).
-
-### Finished early?
-
-Click **Get an extra request** (in the chat list, on the Activity page or in the Guide). You get the next process
-after yours (your problem number + 1). Work in the same file: make a new to-be page for it and reply to that
-manager in the chat.
-
-### 4. Hand in
-
-In the editor click **Hand in (download)**. You get one `.drawio` file containing your diagrams plus one extra page
-per request with your chat replies. Give that file to your teacher. If you did an extra request, it is in the same
-file – you only hand in once.
-
-### Stop / continue later
-
-```
-docker compose stop        # stop – your work stays saved
-docker compose start       # continue later
-```
-(Without compose: `docker stop orbitask` / `docker start orbitask`.)
-
-**Port 8080 already in use?** Change `"8080:8080"` to `"8081:8080"` in `docker-compose.yml` (or use `-p 8081:8080`)
-and open http://localhost:8081.
+Students follow the step-by-step guide in the [main README](../README.md) until the app is open; the presentation
+explains the rest.
 
 ---
 

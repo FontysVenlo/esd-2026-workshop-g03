@@ -1,54 +1,40 @@
-# Getting started – run the Orbitask workshop
+# Workshop team guide
 
 This repo has two Docker apps for part 3 of the workshop (the Orbitask optimisation challenge):
 
 | App | Folder | Address | For |
 |-----|--------|---------|-----|
-| **Student app** | [`orbitask-workshop/`](orbitask-workshop/) | http://localhost:8080 | Each group: a manager's request in a Teams-style chat + draw.io with the as-is BPMN processes |
-| **Presenter app** | [`orbitask-presenter/`](orbitask-presenter/) | http://localhost:8090 | Presenters only: all 7 requests, the reference solution next to each request and a to-be diagram per process |
+| **Student app** | [`orbitask-workshop/`](../orbitask-workshop/) | http://localhost:8080 | Each group: a manager's request in a Teams-style chat + draw.io with the as-is BPMN processes |
+| **Presenter app** | [`orbitask-presenter/`](../orbitask-presenter/) | http://localhost:8090 | Presenters only: all 7 requests, the reference solution next to each request and a to-be diagram per process |
 
 Both run fully offline once they are built.
 
 ---
 
-## 1. Install the requirements (once)
+## Materials
 
-1. **Docker Desktop**: https://www.docker.com/products/docker-desktop/
-   - Windows: let it use the **WSL 2** backend (this is the default).
-   - Start Docker Desktop and wait until it says *Engine running*.
-2. **Git**: https://git-scm.com/downloads (or download the repo as a ZIP from GitHub).
+| What | Where |
+| --- | --- |
+| Slide deck (intro, notation, tools, exercises) | `BPMN Workshop.pptx` |
+| Workshop plan (parts 1–4, timings, materials) | [workshop-plan.md](workshop-plan.md) |
+| Research notes with references | [research-notes.md](research-notes.md) |
+| Notation walkthrough and tool showcase (notes + sources) | [notation-and-tools.md](notation-and-tools.md) |
+| Speaker notes for all of part 1 | [talk-track.md](talk-track.md) |
+| Student app (technical details, assigning requests) | [orbitask-workshop/README.md](../orbitask-workshop/README.md) |
+| Presenter app with reference solutions | [orbitask-presenter/README.md](../orbitask-presenter/README.md) |
+| BPMN 2.0.2 specification / ARIS cheat sheet | `bpmn-formal.pdf`, `cheat-sheet.pdf` |
+| Course slides used as background | `Old Slides/` |
+| Open tasks | [TODO.md](../TODO.md) |
 
-Check that Docker works (in PowerShell, Terminal or a WSL shell):
+Students only get the [main README](../README.md): it takes them step by step until they are in the app. Everything
+after that (where to click, what to model, how to hand in) is explained in the presentation.
 
-```
-docker version
-```
+## Student app
 
-You should see both a *Client* and a *Server* section. If *Server* is missing, Docker Desktop isn't running yet.
+Same steps as the [main README](../README.md): install Docker Desktop, then in `orbitask-workshop/` run
+`docker compose up -d --build` and open http://localhost:8080.
 
-## 2. Get the repo
-
-```
-git clone https://github.com/FontysVenlo/esd-2026-workshop-g03.git
-cd esd-2026-workshop-g03
-```
-
-## 3. Start the student app
-
-```
-cd orbitask-workshop
-docker compose up -d --build
-```
-
-The first build downloads Node.js and draw.io (~1–3 minutes, needs internet). After that it starts in seconds and
-works offline.
-
-Open **http://localhost:8080**, enter your group name and click **Start my first day**. After a few seconds a manager
-sends you a message with your request.
-
-How to work in the app: see [orbitask-workshop/README.md](orbitask-workshop/README.md).
-
-## 4. Start the presenter app (presenters only)
+## Presenter app
 
 The solutions are not in the repo. Get the private solutions folder from Jonathan, then copy
 `orbitask-presenter/.env.example` to `orbitask-presenter/.env` and set `PRESENTER_PASSWORD` and `SOLUTIONS_DIR`.
@@ -65,9 +51,9 @@ message on the projector. In **Processes**, the panel on the left shows the solu
 *Show to-be solution* jumps to the green to-be diagram.
 
 The presenter app takes the app code from `../orbitask-workshop`, so keep both folders next to each other.
-Details: [orbitask-presenter/README.md](orbitask-presenter/README.md).
+Details: [orbitask-presenter/README.md](../orbitask-presenter/README.md).
 
-## 5. Stop, continue, reset
+## Stop, continue, reset
 
 Run these inside the folder of the app (`orbitask-workshop` or `orbitask-presenter`):
 

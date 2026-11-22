@@ -18,7 +18,7 @@
   let T = null;              // ticket currently shown (chat / brief / editor)
   const unread = new Set();  // ticket numbers with an unread message
   let currentView = null;
-  let currentChat = null;    // ticket number or 'guide'
+  let currentChat = null;    // ticket number
   let animating = false;
 
   const PRESENTER = () => S && S.presenter;
@@ -58,7 +58,7 @@
 
   function routeFor() {
     if (!currentView || currentView === 'welcome' || !T) return '';
-    if (currentView === 'chat') return '#/chat/' + (currentChat === 'guide' ? 'guide' : T.id);
+    if (currentView === 'chat') return '#/chat/' + T.id;
     if (currentView === 'editor') return '#/editor/' + T.id + (PRESENTER() && isToBe(editorPage) ? '/to-be' : '');
     return '#/' + currentView;
   }
@@ -76,9 +76,9 @@
     const t = byId(id);
     applyingRoute = true;
     try {
-      if (view === 'chat') openChat(id === 'guide' ? 'guide' : (t ? t.number : null));
+      if (view === 'chat') openChat(t ? t.number : null);
       else if (view === 'editor') { if (t) openInEditor(t, PRESENTER() && sub === 'to-be'); else showView('editor'); }
-      else if (view === 'activity' || view === 'guide' || (view === 'solutions' && PRESENTER())) showView(view);
+      else if (view === 'activity' || (view === 'solutions' && PRESENTER())) showView(view);
       else return false;
     } finally { applyingRoute = false; }
     syncRoute(true); // normalise, e.g. #/chat -> #/chat/ORB-1090
@@ -209,7 +209,6 @@
     TICKETS.push(r.ticket);
     S.next = r.next;
     renderChatList();
-    renderGuide();
     renderActivity();
     if (currentView !== 'activity') showView('activity');
     await sleep(1500);
@@ -238,18 +237,10 @@
     ex.innerHTML = '';
     if (!PRESENTER() && isSeen(S.primary)) ex.appendChild(extraCard());
   }
-  $('#chatItemGuide').addEventListener('click', () => openChat('guide'));
 
-  function convHead(kind) {
+  function convHead() {
     const h = $('#convHead');
     h.innerHTML = '';
-    if (kind === 'guide') {
-      const a = el('span', 'avatar bot', '?');
-      h.appendChild(a);
-      const w = el('div', 'who'); w.appendChild(el('b', null, 'Workshop guide'));
-      w.appendChild(el('small', null, 'Automatic assistant')); h.appendChild(w);
-      return;
-    }
     h.appendChild(avatar(T.from_name, T.color, T.initials));
     const w = el('div', 'who');
     w.appendChild(el('b', null, T.from_name));
@@ -262,11 +253,10 @@
 
   function groupFor(who, time, mine) {
     const g = el('div', 'msg-group' + (mine ? ' mine' : ''));
-    if (!mine) g.appendChild(who === 'guide' ? el('span', 'avatar bot', '?') : avatar(T.from_name, T.color, T.initials));
+    if (!mine) g.appendChild(avatar(T.from_name, T.color, T.initials));
     const col = el('div', 'bubbles');
     const meta = el('div', 'msg-meta');
-    meta.appendChild(el('b', null, mine ? (PRESENTER() ? 'Presenter' : (S.team || 'You'))
-      : (who === 'guide' ? 'Workshop guide' : T.from_name)));
+    meta.appendChild(el('b', null, mine ? (PRESENTER() ? 'Presenter' : (S.team || 'You')) : T.from_name));
     meta.appendChild(document.createTextNode(hhmm(time)));
     col.appendChild(meta);
     g.appendChild(col);
@@ -319,27 +309,16 @@
   }
 
   async function openChat(kind) {
-    if (kind == null) kind = TICKETS.some(delivered) ? (TICKETS.find(t => unread.has(t.number)) || T).number : 'guide';
+    if (kind == null) kind = (TICKETS.find(t => unread.has(t.number)) || T).number;
     currentChat = kind;
-    if (kind !== 'guide') selectTicket(kind);
+    selectTicket(kind);
     renderChatList();
     if (currentView !== 'chat') { showView('chat'); return; }
     syncRoute();
-    convHead(kind);
+    convHead();
     const msgs = $('#messages');
     msgs.innerHTML = '';
     const composer = $('#composer');
-    if (kind === 'guide') {
-      composer.classList.add('disabled');
-      const col = groupFor('guide', S.createdAt, false);
-      col.appendChild(bubbleFor({ type: 'text', text: 'Hi! I explain how this workshop works.' }));
-      col.appendChild(bubbleFor({ type: 'list', intro: 'How to work:', items: S.guide.tips }));
-      col.appendChild(bubbleFor({ type: 'list', intro: 'Rules from Orbitask management:', items: S.guide.constraints }));
-      if (!PRESENTER()) {
-        col.appendChild(bubbleFor({ type: 'text', text: 'Finished early? Click "Get an extra request" in the chat list.' }));
-      }
-      return;
-    }
     const num = T.number;
     if (!delivered(T)) { // nothing received yet
       if (PRESENTER()) { deliverNotification(T, true); } else {
@@ -390,7 +369,7 @@
   async function sendReply() {
     const input = $('#replyInput');
     const text = input.value.trim();
-    if (!text || currentChat === 'guide' || !isSeen(T.number)) return;
+    if (!text || !isSeen(T.number)) return;
     const num = T.number;
     input.value = '';
     const r = await post('/api/reply', { text, ticket: num });
@@ -407,34 +386,6 @@
     typing.replaceWith(el('div', 'bubble', ackText(idx)));
     scrollDown();
     renderChatList();
-  }
-
-  // ------------------------------------------------------------ guide page
-  function renderGuide() {
-    const g = $('#guide');
-    g.innerHTML = '';
-    g.appendChild(el('h1', null, 'Workshop guide'));
-    g.appendChild(el('p', null, 'You are a business-process consultant at Orbitask. A manager sent you a request in the chat. '
-      + 'Analyse the as-is process, design a better to-be process in BPMN and propose the IT tools that make it possible.'));
-    const c1 = el('div', 'card'); c1.appendChild(el('h2', null, 'How to work'));
-    const ol = el('ol'); S.guide.tips.forEach(t => ol.appendChild(el('li', null, t))); c1.appendChild(ol); g.appendChild(c1);
-    const c2 = el('div', 'card'); c2.appendChild(el('h2', null, 'Rules from Orbitask management'));
-    const ul = el('ul'); S.guide.constraints.forEach(t => ul.appendChild(el('li', null, t))); c2.appendChild(ul); g.appendChild(c2);
-    if (!PRESENTER()) {
-      const c4 = el('div', 'card'); c4.appendChild(el('h2', null, 'Finished early?'));
-      c4.appendChild(el('p', null, 'Get the next process and model its to-be on a new page in the same file.'));
-      const extras = TICKETS.filter(t => t.extra);
-      if (extras.length) c4.appendChild(el('p', null, 'Extra requests you have: ' + extras.map(t => `${t.id} (${t.process})`).join(', ')));
-      if (S.next) {
-        const b = el('button', 'primary', 'Get an extra request'); b.onclick = requestExtra; c4.appendChild(b);
-      }
-      g.appendChild(c4);
-    }
-    const c3 = el('div', 'card'); c3.appendChild(el('h2', null, 'Handing in'));
-    c3.appendChild(el('p', null, 'Click "Hand in (download)" in the process editor. You get one .drawio file with your diagrams '
-      + 'and an extra page per request containing your written replies to the manager. Give that file to your teacher. '
-      + 'If you did an extra request, it is in the same file – you only hand in once.'));
-    g.appendChild(c3);
   }
 
   // ------------------------------------------------------------ presenter: reference solutions
@@ -514,7 +465,9 @@
     if (PRESENTER()) b.appendChild(solutionBlock(T, true));
     b.appendChild(el('h3', null, 'Process & scope'));
     b.appendChild(el('div', null, `${T.process}. ${T.scope}.`));
-    T.script.filter(i => i.type === 'list').forEach(i => {
+    const lists = T.script.filter(i => i.type === 'list')
+      .concat([{ intro: 'Rules from Orbitask management', items: S.guide.constraints }]);
+    lists.forEach(i => {
       b.appendChild(el('h3', null, i.intro.replace(/:$/, '')));
       const ul = el('ul'); i.items.forEach(x => ul.appendChild(el('li', null, x))); b.appendChild(ul);
     });
@@ -731,7 +684,6 @@
       document.body.classList.add('presenter');
       $('#railSolutions').hidden = false;
     }
-    renderGuide();
     showTeam();
     // Requests delivered earlier but never opened stay unread after a reload.
     TICKETS.forEach(t => { if (!isSeen(t.number) && t.extra) unread.add(t.number); });
