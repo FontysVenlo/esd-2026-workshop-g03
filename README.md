@@ -9,7 +9,6 @@
 | Research notes with references | [docs/research-notes.md](docs/research-notes.md) |
 | Notation walkthrough and tool showcase (notes + sources) | [docs/notation-and-tools.md](docs/notation-and-tools.md) |
 | Speaker notes for all of part 1 | [docs/talk-track.md](docs/talk-track.md) |
-| Part 2: pizzeria reference model | `pizzeria_process.bpmn` |
 | Part 3: Orbitask optimisation challenge (Docker) | [orbitask-workshop/README.md](orbitask-workshop/README.md) |
 | Part 3: presenter app with reference solutions | [orbitask-presenter/README.md](orbitask-presenter/README.md) |
 | BPMN 2.0.2 specification / ARIS cheat sheet | `bpmn-formal.pdf`, `cheat-sheet.pdf` |

@@ -50,6 +50,9 @@ How to work in the app: see [orbitask-workshop/README.md](orbitask-workshop/READ
 
 ## 4. Start the presenter app (presenters only)
 
+The solutions are not in the repo. Get the private solutions folder from Jonathan, then copy
+`orbitask-presenter/.env.example` to `orbitask-presenter/.env` and set `PRESENTER_PASSWORD` and `SOLUTIONS_DIR`.
+
 From the repo root:
 
 ```

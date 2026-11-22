@@ -36,7 +36,7 @@ Slide deck covering:
 
 #### **Part 2 : Guided Modeling Exercise 1**
 
-Materials: pen papers, 6 differents cheat sheets [BPMN Notation](https://stichtingfontys.sharepoint.com/sites/ESD-BPMNGroup/Gedeelde%20documenten/General/references/cheat-sheet.pdf?TeamsCID=5d56ba11-46d3-45f2-ad46-1c4cad276f34) printed , printed version of correct way(see image under here or [`pizzeria_process.bpmn`](../pizzeria_process.bpmn)), list of different activities in a pizzeria
+Materials: pen papers, 6 differents cheat sheets [BPMN Notation](https://stichtingfontys.sharepoint.com/sites/ESD-BPMNGroup/Gedeelde%20documenten/General/references/cheat-sheet.pdf?TeamsCID=5d56ba11-46d3-45f2-ad46-1c4cad276f34) printed , printed version of the correct way (kept privately, not in this public repo), list of different activities in a pizzeria
 
 Preparation: hand out the printed cheat sheet and the written task, divide the class into groups of 4 people.
 
@@ -49,9 +49,7 @@ Task: make by hand a bpmn of a pizzaria.
 
    ![Pizzeria: all tasks per role](media/od-plan-01.png)
 
-Example BPMN:
-
-![Pizzeria example BPMN (see pizzeria_process.bpmn)](media/od-plan-02.png)
+Example BPMN: kept privately (not in this public repo), shown on the "Compare" slide after the exercise.
 
 #### **Part 3 : Unguided Optimization Challenge** 
 
