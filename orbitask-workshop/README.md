@@ -37,9 +37,6 @@ or uncomment `PROBLEM` in `docker-compose.yml`.
 | 7 | ORB-1090 | P10 Monthly management reporting | CEO |
 
 The container log shows which problem a group got: `docker logs orbitask`.
-The solutions are **not** in this folder or image. They are in the separate presenter image
-[`../orbitask-presenter`](../orbitask-presenter) (all requests, reference solution next to each request, and a
-to-be page after each as-is process) – don't give that folder to students.
 
 ### Groups that finish early
 A group that is done clicks **Get an extra request** and gets the next problem: **their number + 1** (7 → 1).
@@ -69,5 +66,4 @@ docker run -d -p 8080:8080 -v orbitask-data:/data --name orbitask orbitask-works
 - `app/server.js` – small Node.js server (no npm packages): chat API, autosave, hand-in export.
 - `app/public/` – the Teams-style front end.
 - `app/data/` – the as-is processes (`orbitask_as_is_processes.drawio`) and the 7 manager messages (`tickets.json`).
-- Presenter mode (`PRESENTER=1`) is only switched on by the presenter image, which adds the solution files.
 - draw.io itself (official release, version pinned in the `Dockerfile`) is downloaded during the build.

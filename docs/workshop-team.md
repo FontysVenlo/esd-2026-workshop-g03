@@ -1,13 +1,12 @@
 # Workshop team guide
 
-This repo has two Docker apps for part 3 of the workshop (the Orbitask optimisation challenge):
+This repo has a Docker app for part 3 of the workshop (the Orbitask optimisation challenge):
 
 | App | Folder | Address | For |
 |-----|--------|---------|-----|
 | **Student app** | [`orbitask-workshop/`](../orbitask-workshop/) | http://localhost:8080 | Each group: a manager's request in a Teams-style chat + draw.io with the as-is BPMN processes |
-| **Presenter app** | [`orbitask-presenter/`](../orbitask-presenter/) | http://localhost:8090 | Presenters only: all 7 requests, the reference solution next to each request and a to-be diagram per process |
 
-Both run fully offline once they are built.
+It runs fully offline once it is built.
 
 ---
 
@@ -21,7 +20,6 @@ Both run fully offline once they are built.
 | Notation walkthrough and tool showcase (notes + sources) | [notation-and-tools.md](notation-and-tools.md) |
 | Speaker notes for all of part 1 | [talk-track.md](talk-track.md) |
 | Student app (technical details, assigning requests) | [orbitask-workshop/README.md](../orbitask-workshop/README.md) |
-| Presenter app with reference solutions | [orbitask-presenter/README.md](../orbitask-presenter/README.md) |
 | BPMN 2.0.2 specification / ARIS cheat sheet | `bpmn-formal.pdf`, `cheat-sheet.pdf` |
 | Course slides used as background | `Old Slides/` |
 | Open tasks | [TODO.md](../TODO.md) |
@@ -34,28 +32,9 @@ after that (where to click, what to model, how to hand in) is explained in the p
 Same steps as the [main README](../README.md): install Docker Desktop, then in `orbitask-workshop/` run
 `docker compose up -d --build` and open http://localhost:8080.
 
-## Presenter app
-
-The solutions are not in the repo. Get the private solutions folder from Jonathan, then copy
-`orbitask-presenter/.env.example` to `orbitask-presenter/.env` and set `PRESENTER_PASSWORD` and `SOLUTIONS_DIR`.
-
-From the repo root:
-
-```
-cd orbitask-presenter
-docker compose up -d --build
-```
-
-Open **http://localhost:8090**. It opens on the **Solutions** page. Click a manager in the **Chat** to replay their
-message on the projector. In **Processes**, the panel on the left shows the solution next to the request, and
-*Show to-be solution* jumps to the green to-be diagram.
-
-The presenter app takes the app code from `../orbitask-workshop`, so keep both folders next to each other.
-Details: [orbitask-presenter/README.md](../orbitask-presenter/README.md).
-
 ## Stop, continue, reset
 
-Run these inside the folder of the app (`orbitask-workshop` or `orbitask-presenter`):
+Run these inside `orbitask-workshop`:
 
 | What | Command |
 |------|---------|
@@ -91,9 +70,8 @@ Run these inside the folder of the app (`orbitask-workshop` or `orbitask-present
 | Problem | Fix |
 |---------|-----|
 | `docker: command not found` / *cannot connect to the Docker daemon* | Start Docker Desktop and wait for *Engine running*. In WSL: Docker Desktop → Settings → Resources → WSL integration → enable your distro. |
-| *port is already allocated* | Another app uses 8080/8090. Change the left number in `docker-compose.yml` (e.g. `"8081:8080"`) and open that port instead. |
-| *container name "/orbitask" is already in use* | An old container exists: `docker rm -f orbitask` (or `orbitask-presenter`), then start again. |
-| Presenter build fails with *additional_contexts* / *build-context* | Update Docker Desktop (needs Compose 2.17+), or build by hand: `docker build --build-context workshop=../orbitask-workshop -t orbitask-presenter .` |
+| *port is already allocated* | Another app uses 8080. Change the left number in `docker-compose.yml` (e.g. `"8081:8080"`) and open that port instead. |
+| *container name "/orbitask" is already in use* | An old container exists: `docker rm -f orbitask`, then start again. |
 | Page opens but the editor stays on *Loading draw.io…* | Hard-reload the page (Ctrl+F5). Check `docker compose logs`. |
 | No internet in the classroom | Build once at home. Or share an image: `docker save orbitask-workshop -o orbitask.tar`, then on the other laptop `docker load -i orbitask.tar` and `docker run -d -p 8080:8080 -v orbitask-data:/data --name orbitask orbitask-workshop`. |
 | Want to test several groups on one laptop | Use another project name and port, e.g. `docker run -d -p 8081:8080 -v orbitask-g2:/data --name orbitask-g2 orbitask-workshop`. |

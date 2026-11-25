@@ -58,4 +58,4 @@ Your work stays saved.
 
 ---
 
-Workshop team (slides, notes, presenter app): see [docs/workshop-team.md](docs/workshop-team.md).
+Workshop team (slides, notes): see [docs/workshop-team.md](docs/workshop-team.md).
