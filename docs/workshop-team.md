@@ -42,13 +42,14 @@ Run these inside `orbitask-workshop`:
 | Continue later | `docker compose start` |
 | See logs (which request a group got) | `docker compose logs` |
 | Update after `git pull` | `docker compose up -d --build` |
-| **Reset everything** (deletes the saved work, new random request) | `docker compose down -v` then `docker compose up -d` |
+| **Reset everything** (deletes the saved work, group number asked again) | `docker compose down -v` then `docker compose up -d` |
 
 ## During the workshop
 
-- **One container per group.** Each group runs the student app on one laptop. On first start it randomly picks one
-  of the 7 requests. To give a group a specific request, uncomment `PROBLEM` in
-  `orbitask-workshop/docker-compose.yml` (1–7) before starting.
+- **One container per group.** Each group runs the student app on one laptop. Give every group a number (1, 2, 3…)
+  before they start: they type it on the welcome screen and get that request (group 1 → request 1 … group 7 →
+  request 7, group 8 → request 1 again). The number can't be changed once they've read the first message.
+  `PROBLEM` in `orbitask-workshop/docker-compose.yml` (1–7) still overrides the number if you need it.
 - **Finished early?** The group clicks **Get an extra request** and gets the next request (their number + 1,
   7 → 1) in the same file.
 - **Hand in:** in the editor, **Hand in (download)** gives one `.drawio` file with all diagrams and the chat replies

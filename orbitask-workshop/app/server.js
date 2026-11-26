@@ -184,7 +184,7 @@ function buildHandIn() {
           .replace(/\n/g, '<br>')}</li>`).join('')
       : '<li><i>No written reply was sent.</i></li>';
     const html = `<h2>Hand-in – ${esc(t.id)}: ${esc(t.title)}</h2>`
-      + `<p><b>Team:</b> ${esc(state.team || '(not filled in)')}<br><b>Request:</b> `
+      + `<p><b>Team:</b> ${esc(state.team || '(not filled in)')}${state.group ? ' (group ' + state.group + ')' : ''}<br><b>Request:</b> `
       + `${i === 0 ? 'assigned request' : 'extra request ' + i + ' (finished early)'}<br><b>Requester:</b> `
       + `${esc(t.from_name)}, ${esc(t.from_role)}<br><b>Process:</b> ${esc(t.process)}<br><b>Scope:</b> `
       + `${esc(t.scope)}</p><h3>Our written proposal (chat replies)</h3><ul>${replies}</ul>`;
@@ -227,8 +227,20 @@ async function handle(req, res) {
   }
   if (p === '/api/team' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req) || '{}');
-    state.team = String(body.team || '').slice(0, 120); saveState();
-    return json(res, 200, { ok: true, team: state.team });
+    state.team = String(body.team || '').slice(0, 120);
+    // The group number (given by the teacher) picks the request: group 1 → request 1 … group 7 → 7, group 8 → 1 again.
+    // Only once, and only before the group has read its first message, so a group can't switch request halfway.
+    // An explicit PROBLEM (docker-compose.yml) still wins.
+    const group = parseInt(body.group, 10);
+    const forced = parseInt(process.env.PROBLEM || '', 10);
+    if (group >= 1 && group <= 99 && !state.group && !Object.keys(state.seen).length && !state.extra.length
+        && !(forced >= 1 && forced <= N)) {
+      state.group = group;
+      state.ticket = ((group - 1) % N) + 1;
+      console.log(`Group ${group} ("${state.team}") → request #${state.ticket} ${ticket().id} – ${ticket().process}`);
+    }
+    saveState();
+    return json(res, 200, { ok: true, team: state.team, group: state.group || null });
   }
   if (p === '/api/seen' && req.method === 'POST') {
     const body = JSON.parse(await readBody(req) || '{}');

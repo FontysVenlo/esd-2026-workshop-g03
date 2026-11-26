@@ -17,9 +17,11 @@ explains the rest.
 ## For the teacher
 
 ### How problems are assigned
-On its first start each container randomly picks **one of the 7 problems** and keeps it (it is stored in the data
-volume, so restarting does not change it). Because each group's container picks independently, **two groups can get
-the same problem**. To control it, give a group a fixed problem:
+Give every group a **group number** (1, 2, 3…) before they start. They type it on the welcome screen together with
+their names, and the number decides the problem: group 1 → problem 1 … group 7 → problem 7, group 8 → problem 1 again.
+So with up to 7 groups, nobody gets the same problem. The choice is stored in the data volume (restarting does not
+change it) and can't be changed once the group has read the manager's first message. To force a problem anyway
+(this overrides the group number):
 
 ```
 docker run -d -p 8080:8080 -v orbitask-data:/data -e PROBLEM=3 --name orbitask orbitask-workshop

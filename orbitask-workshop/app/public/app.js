@@ -118,13 +118,22 @@
 
   // ------------------------------------------------------------ welcome + notification
   $('#startBtn').addEventListener('click', start);
-  $('#teamInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+  ['#teamInput', '#groupInput'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') start(); }));
 
   async function start() {
+    const group = parseInt($('#groupInput').value, 10);
     const team = $('#teamInput').value.trim();
+    if (!(group >= 1 && group <= 99)) {
+      $('#groupInput').value = ''; $('#groupInput').focus();
+      $('#groupInput').placeholder = 'Please enter your group number (1, 2, 3…)'; return;
+    }
     if (!team) { $('#teamInput').focus(); $('#teamInput').placeholder = 'Please enter your names or group name'; return; }
-    await post('/api/team', { team });
-    S.team = team; S._started = true;
+    await post('/api/team', { team, group });
+    // The group number decides the request: reload the session so the chat, editor and "next request" follow it.
+    const fresh = await api('/api/session');
+    S = Object.assign(fresh, { seen: fresh.seen || {} });
+    TICKETS = S.tickets; T = null; selectTicket(S.primary);
+    S._started = true;
     showTeam();
     showView('activity');
     await sleep(2500);
